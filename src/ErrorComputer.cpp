@@ -69,7 +69,7 @@ void ErrorComputer::operator()() {
 
 		ChannelArray desiredOutput = {error[_worldx], error[_worldz]};
 		if (desiredOutput != _lastOutput) {
-			std::cout << "Requesting output " << desiredOutput[0] << ", " << desiredOutput[1] << std::endl;
+			//std::cout << "Requesting output " << desiredOutput[0] << ", " << desiredOutput[1] << std::endl;
 			_output->request_change_channels(CHANNELS, desiredOutput.data());
 			_lastOutput = desiredOutput;
 			_gotGoal = false;
