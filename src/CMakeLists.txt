@@ -4,6 +4,8 @@ include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DI
 set(SOURCES
 	ErrorCommandOutput.cpp
 	ErrorCommandOutput.h
+	ErrorComputer.cpp
+	ErrorComputer.h
 	main.cpp)
 
 add_executable(error_server ${SOURCES})
