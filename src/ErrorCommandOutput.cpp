@@ -39,7 +39,7 @@ void ErrorCommandOutput::mainloop() {
 	_out_server->mainloop();
 	StateType newValues;
 	std::copy(_out_server->o_channels(), _out_server->o_channels() + NumChannels, newValues.begin());
-	
+
 	if (newValues != _last_values) {
 		std::ostringstream s;
 		s << CommandPrefix;
@@ -52,7 +52,7 @@ void ErrorCommandOutput::mainloop() {
 		_port.write(s.str());
 		_last_values = newValues;
 	}
-	
+
 	_recv = _port.read_available_characters();
 	if (!_recv.empty()) {
 		if (_callback) {

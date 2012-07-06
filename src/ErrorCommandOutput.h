@@ -48,9 +48,9 @@ class ErrorCommandOutput {
 		std::ostream & log() const;
 		void mainloop();
 	private:
-	
+
 		typedef boost::array<vrpn_float64, NumChannels> StateType;
-		
+
 		vrpn_SerialPort _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Server> _out_server;
 		StateType _last_values;
