@@ -40,6 +40,7 @@ class ErrorCommandOutput {
 
 		typedef boost::function<void(std::string const&)> DataHandlerCallback;
 		ErrorCommandOutput(const char * deviceName, const char * portName, long baud, DataHandlerCallback callback = DataHandlerCallback(), vrpn_Connection * c = NULL);
+		~ErrorCommandOutput();
 
 		void setDataCallback(DataHandlerCallback callback) {
 			_callback = callback;
@@ -48,11 +49,12 @@ class ErrorCommandOutput {
 		std::ostream & log() const;
 		void mainloop();
 	private:
-
+		void _changeHandler(const vrpn_float64 * channels);
+		static VRPN_CALLBACK void _changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info);
 		typedef boost::array<vrpn_float64, NumChannels> StateType;
 
 		vrpn_SerialPort _port;
-		boost::scoped_ptr<vrpn_Analog_Output_Server> _out_server;
+		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 		StateType _last_values;
 		DataHandlerCallback _callback;
 		std::string _recv;

@@ -31,27 +31,17 @@
 ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, DataHandlerCallback callback, vrpn_Connection * c)
 	: _port(portName, baud)
 	, _callback(callback) {
-	_out_server.reset(new vrpn_Analog_Output_Server(deviceName, c, NumChannels));
+	_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
+	_out_server->register_change_handler(this, &ErrorCommandOutput::_changeHandlerTrampoline);
 	std::fill(_last_values.begin(), _last_values.end(), 0);
+}
+
+ErrorCommandOutput::~ErrorCommandOutput() {
+	_out_server->unregister_change_handler(this, &ErrorCommandOutput::_changeHandlerTrampoline);
 }
 
 void ErrorCommandOutput::mainloop() {
 	_out_server->mainloop();
-	StateType newValues;
-	std::copy(_out_server->o_channels(), _out_server->o_channels() + NumChannels, newValues.begin());
-
-	if (newValues != _last_values) {
-		std::ostringstream s;
-		s << CommandPrefix;
-		for (StateType::const_iterator i = newValues.begin(), e = newValues.end(); i != e; ++i) {
-			s << " " << static_cast<int>(*i);
-		}
-		log() << "Sending command '" << s.str() << "'" << std::endl;
-		/// Add a newline just to cap it off.
-		s << '\n';
-		_port.write(s.str());
-		_last_values = newValues;
-	}
 
 	_recv = _port.read_available_characters();
 	if (!_recv.empty()) {
@@ -61,6 +51,21 @@ void ErrorCommandOutput::mainloop() {
 			log() << "Received data from serial: " << _recv << std::endl;
 		}
 	}
+}
+
+void ErrorCommandOutput::_changeHandler(const vrpn_float64 * channels) {
+	std::ostringstream s;
+	s << CommandPrefix;
+	for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
+		s << " " << static_cast<int>(*i);
+	}
+	log() << "Sending command '" << s.str() << "'" << std::endl;
+	/// Add a newline just to cap it off.
+	s << '\n';
+	_port.write(s.str());
+}
+void ErrorCommandOutput::_changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {
+	static_cast<ErrorCommandOutput*>(userdata)->_changeHandler(info.channel);
 }
 
 std::ostream & ErrorCommandOutput::log() const {
