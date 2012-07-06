@@ -19,6 +19,7 @@
 
 // Internal Includes
 #include "ErrorCommandOutput.h"
+#include "ErrorComputer.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
@@ -54,18 +55,31 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
+	/// MainloopContainer will hold and own (and thus appropriately delete)
+	/// anything we can give it that has a "mainloop" method.
 	vrpn_MainloopContainer container;
 	vrpn_Connection * c = vrpn_create_server_connection();
 	container.add(c);
 
-	ErrorCommandOutput * output = new ErrorCommandOutput(devName.c_str(), port.c_str(), baud, c);
-	container.add(output);
+	container.add(new ErrorCommandOutput(devName.c_str(), port.c_str(), baud, c));
+
+	container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
+
+	vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
+	container.add(tkr_remote);
 
 	vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
 	container.add(outRemote);
-	while (1) {
-		container.mainloop();
-		vrpn_SleepMsecs(1);
+
+	{
+		/// Error computer must be created after and destroyed before the mainloop container
+		/// and its contents.
+		ErrorComputer error_computations(tkr_remote, outRemote);
+		while (1) {
+			container.mainloop();
+			error_computations();
+			vrpn_SleepMsecs(1);
+		}
 	}
 	return 0;
 }
