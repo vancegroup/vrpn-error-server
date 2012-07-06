@@ -28,11 +28,10 @@
 #include <iostream>
 #include <sstream>
 
-ErrorCommandOutput::ErrorCommandOutput(const char * portName, long baud, DataHandlerCallback callback, vrpn_Connection * c)
+ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, DataHandlerCallback callback, vrpn_Connection * c)
 	: _port(portName, baud)
-	, _callback(callback)
-{
-	_out_server.reset(new vrpn_Analog_Output_Server("ErrorCommand", c, NumChannels));
+	, _callback(callback) {
+	_out_server.reset(new vrpn_Analog_Output_Server(deviceName, c, NumChannels));
 	std::fill(_last_values.begin(), _last_values.end(), 0);
 }
 
