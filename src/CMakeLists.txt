@@ -2,8 +2,7 @@
 include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 set(SOURCES
-	ErrorCommandOutput.cpp
-	ErrorCommandOutput.h
+	CommandOutput.h
 	ErrorComputer.cpp
 	ErrorComputer.h
 	main.cpp)

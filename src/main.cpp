@@ -18,7 +18,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
-#include "ErrorCommandOutput.h"
+#include "CommandOutput.h"
 #include "ErrorComputer.h"
 
 // Library/third-party includes
@@ -61,7 +61,7 @@ int main(int argc, char * argv[]) {
 	vrpn_Connection * c = vrpn_create_server_connection();
 	container.add(c);
 
-	container.add(new ErrorCommandOutput(devName.c_str(), port.c_str(), baud, c));
+	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), port.c_str(), baud, c));
 
 	container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
 
