@@ -22,6 +22,8 @@
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
+#include <vrpn_MainloopContainer.h>
+#include <vrpn_Tracker_RazerHydra.h>
 
 // Standard includes
 #include <string>
@@ -52,9 +54,17 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
-	ErrorCommandOutput output(devName.c_str(), port.c_str(), baud);
+	vrpn_MainloopContainer container;
+	vrpn_Connection * c = vrpn_create_server_connection();
+	container.add(c);
+
+	ErrorCommandOutput * output = new ErrorCommandOutput(devName.c_str(), port.c_str(), baud, c);
+	container.add(output);
+
+	vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
+	container.add(outRemote);
 	while (1) {
-		output.mainloop();
+		container.mainloop();
 		vrpn_SleepMsecs(1);
 	}
 	return 0;
