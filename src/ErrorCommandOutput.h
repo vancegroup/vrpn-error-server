@@ -29,6 +29,8 @@
 #include <boost/array.hpp>
 #include <boost/function.hpp>
 
+#include <util/Stride.h>
+
 // Standard includes
 #include <string>
 #include <iosfwd>
@@ -58,6 +60,7 @@ class ErrorCommandOutput {
 		StateType _last_values;
 		DataHandlerCallback _callback;
 		std::string _recv;
+		util::Stride _showCommandStride;
 
 };
 

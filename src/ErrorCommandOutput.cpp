@@ -20,6 +20,7 @@
 // Internal Includes
 #include "ErrorCommandOutput.h"
 
+
 // Library/third-party includes
 // - none
 
@@ -27,11 +28,12 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
-
+#include <algorithm>
 
 ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, vrpn_Connection * c, DataHandlerCallback callback)
 	: _port(portName, baud)
-	, _callback(callback) {
+	, _callback(callback)
+	, _showCommandStride(20) {
 	_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
 	_out_server->register_change_handler(this, &ErrorCommandOutput::_changeHandlerTrampoline);
 	std::fill(_last_values.begin(), _last_values.end(), 0);
@@ -55,15 +57,23 @@ void ErrorCommandOutput::mainloop() {
 }
 
 void ErrorCommandOutput::_changeHandler(const vrpn_float64 * channels) {
-	std::ostringstream s;
-	s << CommandPrefix;
-	for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
-		s << " " << static_cast<int>(*i);
+	StateType newState;
+	std::copy(channels, channels + NumChannels, newState.begin());
+	if (newState != _last_values) {
+		std::ostringstream cmd;
+		cmd << CommandPrefix;
+		for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
+			cmd << " " << *i;
+		}
+		if (_showCommandStride) {
+			log() << "Sending command '" << cmd.str() << "'" << std::endl;
+		}
+		_showCommandStride++;
+		/// Add a newline just to cap it off.
+		cmd << '\n';
+		_port.write(cmd.str());
+		_last_values = newState;
 	}
-	log() << "Sending command '" << s.str() << "'" << std::endl;
-	/// Add a newline just to cap it off.
-	s << '\n';
-	_port.write(s.str());
 }
 void ErrorCommandOutput::_changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {
 	static_cast<ErrorCommandOutput*>(userdata)->_changeHandler(info.channel);
