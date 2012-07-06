@@ -49,7 +49,7 @@ void ErrorCommandOutput::mainloop() {
 		}
 		log() << "Sending command '" << s.str() << "'" << std::endl;
 		/// Add a newline just to cap it off.
-		s << '\n'
+		s << '\n';
 		_port.write(s.str());
 		_last_values = newValues;
 	}

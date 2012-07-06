@@ -25,9 +25,9 @@
 #include <vrpn_SerialPort.h>
 
 // Library/third-party includes
-#include <boost/scoped_ptr.h>
-#include <boost/array.h>
-#include <boost/function.h>
+#include <boost/scoped_ptr.hpp>
+#include <boost/array.hpp>
+#include <boost/function.hpp>
 
 // Standard includes
 #include <string>

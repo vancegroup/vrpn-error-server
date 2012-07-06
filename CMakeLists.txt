@@ -1,4 +1,4 @@
-# 2009-2011 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryandnet>
+# Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com/
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -31,6 +31,8 @@ set(VRPN_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/vrpn" "${CMAKE_CURRENT_SOURCE
 set(VRPN_LIBRARIES vrpnserver)
 set(VRPN_FOUND TRUE)
 add_definitions(-DVRPN_USING_CMAKE)
+
+find_package(Boost REQUIRED)
 
 
 ###

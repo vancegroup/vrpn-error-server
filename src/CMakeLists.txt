@@ -1,4 +1,6 @@
 
+include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS})
+
 set(SOURCES
 	ErrorCommandOutput.cpp
 	ErrorCommandOutput.h)
