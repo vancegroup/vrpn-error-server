@@ -28,7 +28,8 @@
 #include <iostream>
 #include <sstream>
 
-ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, DataHandlerCallback callback, vrpn_Connection * c)
+
+ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, vrpn_Connection * c, DataHandlerCallback callback)
 	: _port(portName, baud)
 	, _callback(callback) {
 	_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));

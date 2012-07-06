@@ -39,7 +39,7 @@ class ErrorCommandOutput {
 		static const char CommandPrefix = 'E';
 
 		typedef boost::function<void(std::string const&)> DataHandlerCallback;
-		ErrorCommandOutput(const char * deviceName, const char * portName, long baud, DataHandlerCallback callback = DataHandlerCallback(), vrpn_Connection * c = NULL);
+		ErrorCommandOutput(const char * deviceName, const char * portName, long baud, vrpn_Connection * c = NULL, DataHandlerCallback callback = DataHandlerCallback());
 		~ErrorCommandOutput();
 
 		void setDataCallback(DataHandlerCallback callback) {
