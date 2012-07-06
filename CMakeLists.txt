@@ -34,6 +34,8 @@ add_definitions(-DVRPN_USING_CMAKE)
 
 find_package(Boost REQUIRED)
 
+set(TCLAP_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/tclap-1.2.1/include")
+
 
 ###
 # Build the project

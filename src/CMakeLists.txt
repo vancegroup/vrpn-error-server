@@ -1,9 +1,10 @@
 
-include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS})
 
 set(SOURCES
 	ErrorCommandOutput.cpp
-	ErrorCommandOutput.h)
+	ErrorCommandOutput.h
+	main.cpp)
 
-add_library(error_server ${SOURCES})
+add_executable(error_server ${SOURCES})
 target_link_libraries(error_server ${VRPN_LIBRARIES})
