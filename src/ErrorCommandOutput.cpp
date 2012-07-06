@@ -25,10 +25,8 @@
 // - none
 
 // Standard includes
-#include <algorithm>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 
 ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * portName, long baud, vrpn_Connection * c, DataHandlerCallback callback)
 	: _port(portName, baud)
@@ -36,7 +34,6 @@ ErrorCommandOutput::ErrorCommandOutput(const char * deviceName, const char * por
 	, _showCommandStride(20) {
 	_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
 	_out_server->register_change_handler(this, &ErrorCommandOutput::_changeHandlerTrampoline);
-	std::fill(_last_values.begin(), _last_values.end(), 0);
 }
 
 ErrorCommandOutput::~ErrorCommandOutput() {
@@ -57,14 +54,15 @@ void ErrorCommandOutput::mainloop() {
 }
 
 void ErrorCommandOutput::_changeHandler(const vrpn_float64 * channels) {
-	StateType newState;
-	std::copy(channels, channels + NumChannels, newState.begin());
-	if (newState != _last_values) {
-		std::ostringstream cmd;
-		cmd << CommandPrefix;
-		for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
-			cmd << " " << *i;
-		}
+	std::ostringstream cmd;
+	cmd << CommandPrefix;
+	for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
+		cmd << " " << *i;
+	}
+
+	/// If the new command would be different than the last thing we sent
+	if (cmd.str() != _last_cmd) {
+		_last_cmd = cmd.str();
 		if (_showCommandStride) {
 			log() << "Sending command '" << cmd.str() << "'" << std::endl;
 		}
@@ -72,7 +70,6 @@ void ErrorCommandOutput::_changeHandler(const vrpn_float64 * channels) {
 		/// Add a newline just to cap it off.
 		cmd << '\n';
 		_port.write(cmd.str());
-		_last_values = newState;
 	}
 }
 void ErrorCommandOutput::_changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {

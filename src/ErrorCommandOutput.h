@@ -26,7 +26,6 @@
 
 // Library/third-party includes
 #include <boost/scoped_ptr.hpp>
-#include <boost/array.hpp>
 #include <boost/function.hpp>
 
 #include <util/Stride.h>
@@ -53,11 +52,10 @@ class ErrorCommandOutput {
 	private:
 		void _changeHandler(const vrpn_float64 * channels);
 		static VRPN_CALLBACK void _changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info);
-		typedef boost::array<vrpn_float64, NumChannels> StateType;
 
 		vrpn_SerialPort _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
-		StateType _last_values;
+		std::string _last_cmd;
 		DataHandlerCallback _callback;
 		std::string _recv;
 		util::Stride _showCommandStride;
