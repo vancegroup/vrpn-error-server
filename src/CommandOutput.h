@@ -82,7 +82,7 @@ class CommandOutput {
 
 		/// @brief Static internal member used to handle vrpn callbacks and forward
 		/// them to the object instance that created them.
-		static VRPN_CALLBACK void _changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {
+		static void VRPN_CALLBACK _changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {
 			static_cast<type*>(userdata)->_changeHandler(info.channel);
 		}
 
