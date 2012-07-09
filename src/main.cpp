@@ -25,6 +25,7 @@
 #include <tclap/CmdLine.h>
 #include <vrpn_MainloopContainer.h>
 #include <vrpn_Tracker_RazerHydra.h>
+#include <util/Stride.h>
 
 // Standard includes
 #include <string>
@@ -36,6 +37,7 @@ int main(int argc, char * argv[]) {
 	std::string port;
 	std::string devName;
 	long baud;
+	int strideNum;
 	try {
 		// Define the command line object.
 		TCLAP::CmdLine cmd("Send appropriate error commands to a serial-connected controller", ' ',
@@ -44,17 +46,19 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<std::string> portname("p", "port", "serial port name", true, "", "serial port", cmd);
 		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
+		TCLAP::ValueArg<long> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
 		cmd.parse(argc, argv);
 
 		// Get the value parsed by each arg.
 		port = portname.getValue();
 		devName = outdevname.getValue();
 		baud = baudrate.getValue();
+		strideNum = strideval.getValue();
 	} catch (TCLAP::ArgException & e) {
 		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
 		return 1;
 	}
-
+	util::Stride s(strideNum);
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
 	vrpn_MainloopContainer container;
@@ -77,7 +81,10 @@ int main(int argc, char * argv[]) {
 		ErrorComputer error_computations(tkr_remote, outRemote);
 		while (1) {
 			container.mainloop();
-			error_computations();
+			if (s) {
+				error_computations();
+			}
+			s++;
 			vrpn_SleepMsecs(1);
 		}
 	}
