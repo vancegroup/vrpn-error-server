@@ -31,36 +31,36 @@ ErrorComputer::ErrorComputer(vrpn_Tracker_Remote * tracker, vrpn_Analog_Output_R
 	: _tracker(tracker)
 	, _output(output)
 	, _robotSensor(robot_sensor)
+	, _robotHandler(&ErrorComputer::_handleRobot, this)
 	, _gotRobot(false)
 	, _positionRobot(3)
 	, _goalSensor(goal_sensor)
+	, _goalHandler(&ErrorComputer::_handleGoal, this)
 	, _gotGoal(false)
 	, _positionGoal(3)
 	, _worldx(worldx)
 	, _worldz(worldz) {
-	_tracker->register_change_handler(this, &ErrorComputer::_handleRobot, _robotSensor);
-	_tracker->register_change_handler(this, &ErrorComputer::_handleGoal, _goalSensor);
+	vrpn_Callbacks::register_change_handler(_tracker, _robotHandler, _robotSensor);
+	vrpn_Callbacks::register_change_handler(_tracker, _goalHandler, _goalSensor);
 	_lastOutput[0] = 0;
 	_lastOutput[1] = 0;
 }
 
 ErrorComputer::~ErrorComputer() {
-	_tracker->unregister_change_handler(this, &ErrorComputer::_handleRobot, _robotSensor);
-	_tracker->unregister_change_handler(this, &ErrorComputer::_handleGoal, _goalSensor);
+	vrpn_Callbacks::unregister_change_handler(_tracker, _robotHandler, _robotSensor);
+	vrpn_Callbacks::unregister_change_handler(_tracker, _goalHandler, _goalSensor);
 }
 
-void VRPN_CALLBACK ErrorComputer::_handleRobot(void * userdata, const vrpn_TRACKERCB info) {
-	ErrorComputer * self = static_cast<ErrorComputer*>(userdata);
-	self->_gotRobot = true;
-	self->_positionRobot = std::valarray<double>(info.pos, 3);
-	//std::cout << "Robot: " << self->_positionRobot[0] << ", " << self->_positionRobot[1] << ", " << self->_positionRobot[2] << std::endl;
+void ErrorComputer::_handleRobot(const vrpn_TRACKERCB info) {
+	_gotRobot = true;
+	_positionRobot = std::valarray<double>(info.pos, 3);
+	//std::cout << "Robot: " << _positionRobot[0] << ", " << _positionRobot[1] << ", " << _positionRobot[2] << std::endl;
 }
 
-void VRPN_CALLBACK ErrorComputer::_handleGoal(void * userdata, const vrpn_TRACKERCB info) {
-	ErrorComputer * self = static_cast<ErrorComputer*>(userdata);
-	self->_gotGoal = true;
-	self->_positionGoal = std::valarray<double>(info.pos, 3);
-	//std::cout << "Goal: " << self->_positionGoal[0] << ", " << self->_positionGoal[1] << ", " << self->_positionGoal[2] << std::endl;
+void ErrorComputer::_handleGoal(const vrpn_TRACKERCB info) {
+	_gotGoal = true;
+	_positionGoal = std::valarray<double>(info.pos, 3);
+	//std::cout << "Goal: " << _positionGoal[0] << ", " << _positionGoal[1] << ", " << _positionGoal[2] << std::endl;
 }
 
 void ErrorComputer::operator()() {

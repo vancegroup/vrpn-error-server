@@ -21,7 +21,7 @@
 #define INCLUDED_ErrorComputer_h_GUID_fa857175_0ca1_4b88_820a_f7d0b1233c46
 
 // Internal Includes
-// - none
+#include "vrpn_Callbacks/vrpn_Tracker_Callbacks.h"
 
 // Library/third-party includes
 #include <boost/noncopyable.hpp>
@@ -45,17 +45,19 @@ class ErrorComputer : boost::noncopyable {
 		/// Compute and send updated error, if applicable.
 		void operator()();
 	private:
-		static void VRPN_CALLBACK _handleRobot(void * userdata, const vrpn_TRACKERCB info);
-		static void VRPN_CALLBACK _handleGoal(void * userdata, const vrpn_TRACKERCB info);
+		void _handleRobot(const vrpn_TRACKERCB info);
+		void _handleGoal(const vrpn_TRACKERCB info);
 
 		vrpn_Tracker_Remote * _tracker;
 		vrpn_Analog_Output_Remote * _output;
 
 		int _robotSensor;
+		vrpn_Tracker_Change_Handler _robotHandler;
 		bool _gotRobot;
 		std::valarray<double> _positionRobot;
 
 		int _goalSensor;
+		vrpn_Tracker_Change_Handler _goalHandler;
 		bool _gotGoal;
 		std::valarray<double> _positionGoal;
 
