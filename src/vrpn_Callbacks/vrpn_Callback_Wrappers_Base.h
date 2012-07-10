@@ -97,6 +97,16 @@ namespace vrpn_Callbacks {
 	void unregister_change_handler(T vrpnptr, vrpn_Boost_Callback_Wrapper_Base<Derived> & callback) {
 		vrpnptr->unregister_change_handler(callback.getDerived().getUserdata(), callback.getDerived().getCallback());
 	}
+
+	template<typename T, typename Derived, typename U>
+	void register_change_handler(T vrpnptr, vrpn_Boost_Callback_Wrapper_Base<Derived> & callback, U param) {
+		vrpnptr->register_change_handler(callback.getDerived().getUserdata(), callback.getDerived().getCallback(), param);
+	}
+
+	template<typename T, typename Derived, typename U>
+	void unregister_change_handler(T vrpnptr, vrpn_Boost_Callback_Wrapper_Base<Derived> & callback, U param) {
+		vrpnptr->unregister_change_handler(callback.getDerived().getUserdata(), callback.getDerived().getCallback(), param);
+	}
 }
 
 #endif // INCLUDED_vrpn_Callback_Wrappers_Base_h_GUID_34c8198e_9d65_42f8_8c96_d91bbd8133e2
