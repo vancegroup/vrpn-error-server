@@ -25,13 +25,6 @@
 
 // Library/third-party includes
 #include <boost/function.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/function_types/function_arity.hpp>
-#include <boost/function_types/result_type.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/function_types/parameter_types.hpp>
-#include <boost/mpl/at.hpp>
-#include <boost/mpl/int.hpp>
 #include <boost/bind.hpp>
 #include <vrpn_Configure.h>
 
@@ -41,16 +34,6 @@
 template<typename CallbackFunctionPtr, typename ArgType>
 class vrpn_Boost_Callback_Wrapper {
 	public:
-		/*
-			/// Check that our assumptions are correct.
-			BOOST_STATIC_ASSERT( (boost::function_types::function_arity<CallbackFunctionPtr>::value == 2) );
-			BOOST_STATIC_ASSERT( (boost::is_same<typename boost::function_types::result_type<CallbackFunctionType>::type, void>::value) );
-			typedef boost::function_types::parameter_types<CallbackFunctionType> ParameterTypes;
-			BOOST_STATIC_ASSERT( (boost::is_same<boost::mpl::at<ParameterTypes, boost::mpl::int_<0> >, void *>::value) );
-
-			/// Extract the actual data argument type.
-			typedef boost::mpl::at<ParameterTypes, boost::mpl::int_<1> > ArgType;
-			*/
 		typedef boost::function<void (ArgType)> HandlerFunctorType;
 		typedef vrpn_Boost_Callback_Wrapper<CallbackFunctionPtr, ArgType> type;
 
