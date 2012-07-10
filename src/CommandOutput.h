@@ -59,12 +59,10 @@ class CommandOutput {
 			, _showCommandStride(commandStride) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
 			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
-			//_out_server->register_change_handler(_handler.getUserdata(), _handler.getCallback());
 		}
 
 		/// @brief Destructor - remove change handler from contained Analog_Output server.
 		~CommandOutput() {
-			//_out_server->unregister_change_handler(_handler.getUserdata(), _handler.getCallback());
 			vrpn_Callbacks::unregister_change_handler(_out_server.get(), _handler);
 		}
 
