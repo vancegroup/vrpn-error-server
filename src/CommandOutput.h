@@ -21,6 +21,7 @@
 #define INCLUDED_CommandOutput_h_GUID_c09e1d6f_b4a2_48ff_936a_42b3216d4bf4
 
 // Internal Includes
+#include "vrpn_Boost_Callback_Wrappers.h"
 #include <vrpn_Analog_Output.h>
 #include <vrpn_SerialPort.h>
 
@@ -53,15 +54,16 @@ class CommandOutput {
 		/// @param commandStride - print the command only once in this many times (optional - default 20)
 		CommandOutput(const char * deviceName, const char * serialPortName, long baud, vrpn_Connection * c = NULL, DataHandlerCallback callback = DataHandlerCallback(), int commandStride = 20)
 			: _port(serialPortName, baud)
+			,  _handler(&type::_changeHandler, this)
 			, _callback(callback)
 			, _showCommandStride(commandStride) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
-			_out_server->register_change_handler(this, &type::_changeHandlerTrampoline);
+			_out_server->register_change_handler(_handler.getUserdata(), _handler.getCallback());
 		}
 
 		/// @brief Destructor - remove change handler from contained Analog_Output server.
 		~CommandOutput() {
-			_out_server->unregister_change_handler(this, &type::_changeHandlerTrampoline);
+			_out_server->unregister_change_handler(_handler.getUserdata(), _handler.getCallback());
 		}
 
 		/// @brief Set a function/functor to call when data is received over serial,
@@ -78,18 +80,13 @@ class CommandOutput {
 		std::ostream & log() const;
 
 		/// @brief Internal member function called when vrpn receives new values to output.
-		void _changeHandler(const vrpn_float64 * channels);
-
-		/// @brief Static internal member used to handle vrpn callbacks and forward
-		/// them to the object instance that created them.
-		static void VRPN_CALLBACK _changeHandlerTrampoline(void * userdata, const vrpn_ANALOGOUTPUTCB info) {
-			static_cast<type*>(userdata)->_changeHandler(info.channel);
-		}
+		void _changeHandler(const vrpn_ANALOGOUTPUTCB info);
 
 
 		vrpn_SerialPort _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
+		vrpn_Analog_Output_Change_Handler _handler;
 		/// @brief String contents of last command sent, excluding trailing \n -
 		/// used to determine if an update should trigger sending a new command.
 		std::string _last_cmd;
@@ -118,7 +115,8 @@ inline void CommandOutput<NumChannels, CommandPrefix>::mainloop() {
 }
 
 template<int NumChannels, char CommandPrefix>
-inline void CommandOutput<NumChannels, CommandPrefix>::_changeHandler(const vrpn_float64 * channels) {
+inline void CommandOutput<NumChannels, CommandPrefix>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
+	const vrpn_float64 * channels = info.channel;
 	std::ostringstream cmd;
 	cmd << CommandPrefix;
 	for (const vrpn_float64 * i = channels, * e = channels + NumChannels; i != e; ++i) {
