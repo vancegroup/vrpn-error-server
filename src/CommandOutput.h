@@ -21,7 +21,7 @@
 #define INCLUDED_CommandOutput_h_GUID_c09e1d6f_b4a2_48ff_936a_42b3216d4bf4
 
 // Internal Includes
-#include "vrpn_Boost_Callback_Wrappers.h"
+#include "vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h"
 #include <vrpn_Analog_Output.h>
 #include <vrpn_SerialPort.h>
 
