@@ -26,6 +26,7 @@
 #include <vrpn_MainloopContainer.h>
 #include <vrpn_Tracker_RazerHydra.h>
 #include <util/Stride.h>
+#include <boost/scoped_ptr.hpp>
 
 // Standard includes
 #include <string>
@@ -38,6 +39,7 @@ int main(int argc, char * argv[]) {
 	std::string devName;
 	long baud;
 	int strideNum;
+	bool externalSource;
 	try {
 		// Define the command line object.
 		TCLAP::CmdLine cmd("Send appropriate error commands to a serial-connected controller", ' ',
@@ -47,6 +49,7 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
 		TCLAP::ValueArg<long> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
+		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
 		cmd.parse(argc, argv);
 
 		// Get the value parsed by each arg.
@@ -54,6 +57,7 @@ int main(int argc, char * argv[]) {
 		devName = outdevname.getValue();
 		baud = baudrate.getValue();
 		strideNum = strideval.getValue();
+		externalSource = externalData.getValue();
 	} catch (TCLAP::ArgException & e) {
 		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
 		return 1;
@@ -67,26 +71,32 @@ int main(int argc, char * argv[]) {
 
 	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), port.c_str(), baud, c));
 
-	container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
+	boost::scoped_ptr<ErrorComputer> error_computations;
+	if (!externalSource) {
+		container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
 
-	vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
-	container.add(tkr_remote);
+		vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
+		container.add(tkr_remote);
 
-	vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
-	container.add(outRemote);
+		vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
+		container.add(outRemote);
+
+		error_computations.reset(new ErrorComputer(tkr_remote, outRemote));
+	}
 
 	{
 		/// Error computer must be created after and destroyed before the mainloop container
 		/// and its contents.
-		ErrorComputer error_computations(tkr_remote, outRemote);
+		;
 		while (1) {
 			container.mainloop();
-			if (s) {
-				error_computations();
+			if (s && error_computations) {
+				(*error_computations)();
 			}
 			s++;
 			vrpn_SleepMsecs(1);
 		}
 	}
+	error_computations.reset();
 	return 0;
 }
