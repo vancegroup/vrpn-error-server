@@ -35,7 +35,9 @@
 
 extern const char * vrpn_MAGIC;
 
-#define VERBOSE_MSG(X) std::cout << X << std::endl;
+#define VERBOSE_START(X) std::cout << X << "..." << std::flush
+#define VERBOSE_MSG(X) std::cout << X << std::endl
+#define VERBOSE_DONE() std::cout << " done." << std::endl
 
 int main(int argc, char * argv[]) {
 	std::string port;
@@ -53,7 +55,7 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<std::string> portname("p", "port", "serial port name", true, "", "serial port", cmd);
 		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
-		TCLAP::ValueArg<long> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
+		TCLAP::ValueArg<int> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
 		TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", cmd);
 		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
 		TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", cmd);
@@ -88,15 +90,19 @@ int main(int argc, char * argv[]) {
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
 	vrpn_MainloopContainer container;
+	VERBOSE_START("Creating server connection on port " << portNum);
 	vrpn_Connection * c = vrpn_create_server_connection(portNum);
 	container.add(c);
-	VERBOSE_MSG("Server connection created.");
+	VERBOSE_DONE();
 
+	VERBOSE_START("Opening serial port " << port);
 	vrpn_SerialPort serialPort(port.c_str(), baud);
-	VERBOSE_MSG("Serial port opened.");
+	VERBOSE_DONE();
 
+	VERBOSE_START("Creating command output server");
 	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
-	VERBOSE_MSG("Command output server created.");
+	VERBOSE_DONE();
+
 
 	{
 		boost::scoped_ptr<ErrorComputer> error_computations;
@@ -114,7 +120,7 @@ int main(int argc, char * argv[]) {
 
 		/// Error computer must be created after and destroyed before the mainloop container
 		/// and its contents.
-		VERBOSE_MSG("Starting mainloop.");
+		VERBOSE_MSG("Entering mainloop.");
 		while (!CleanExit::instance().exitRequested()) {
 			container.mainloop();
 			if (s && error_computations) {
@@ -123,7 +129,7 @@ int main(int argc, char * argv[]) {
 			s++;
 			vrpn_SleepMsecs(1);
 		}
-		VERBOSE_MSG("Exiting...")
+		VERBOSE_MSG("Exiting...");
 	}
 	return 0;
 }
