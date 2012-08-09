@@ -42,6 +42,7 @@ int main(int argc, char * argv[]) {
 	std::string devName;
 	long baud;
 	int strideNum;
+	int portNum;
 	bool externalSource;
 	double interval;
 	try {
@@ -53,6 +54,7 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
 		TCLAP::ValueArg<long> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
+		TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", cmd);
 		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
 		TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", cmd);
 		cmd.parse(argc, argv);
@@ -62,6 +64,7 @@ int main(int argc, char * argv[]) {
 		devName = outdevname.getValue();
 		baud = baudrate.getValue();
 		strideNum = strideval.getValue();
+		portNum = portnumval.getValue();
 		externalSource = externalData.getValue();
 		interval = msginterval.getValue();
 	} catch (TCLAP::ArgException & e) {
@@ -85,7 +88,7 @@ int main(int argc, char * argv[]) {
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
 	vrpn_MainloopContainer container;
-	vrpn_Connection * c = vrpn_create_server_connection();
+	vrpn_Connection * c = vrpn_create_server_connection(portNum);
 	container.add(c);
 	VERBOSE_MSG("Server connection created.");
 
