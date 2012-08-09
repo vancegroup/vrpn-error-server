@@ -67,6 +67,17 @@ int main(int argc, char * argv[]) {
 		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
 		return 1;
 	}
+
+#ifdef _WIN32
+	WSADATA wsaData;
+	int status;
+	if ((status = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
+		std::cerr << "WSAStartup failed with " << status << std::endl;
+		return 1;
+	}
+	VERBOSE_MSG("WSAStartup completed");
+#endif // WIN32
+
 	util::Stride s(strideNum);
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
