@@ -34,6 +34,8 @@
 
 extern const char * vrpn_MAGIC;
 
+#define VERBOSE_MSG(X) std::cout << X << std::endl;
+
 int main(int argc, char * argv[]) {
 	std::string port;
 	std::string devName;
@@ -71,27 +73,30 @@ int main(int argc, char * argv[]) {
 	vrpn_MainloopContainer container;
 	vrpn_Connection * c = vrpn_create_server_connection();
 	container.add(c);
+	VERBOSE_MSG("Server connection created.");
 
 	vrpn_SerialPort serialPort(port.c_str(), baud);
+	VERBOSE_MSG("Serial port opened.");
 
 	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
-	boost::scoped_ptr<ErrorComputer> error_computations;
-	if (!externalSource) {
-		container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
-
-		vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
-		container.add(tkr_remote);
-
-		vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
-		container.add(outRemote);
-
-		error_computations.reset(new ErrorComputer(tkr_remote, outRemote));
-	}
+	VERBOSE_MSG("Command output server created.");
 
 	{
+		boost::scoped_ptr<ErrorComputer> error_computations;
+		if (!externalSource) {
+			container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
+
+			vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
+			container.add(tkr_remote);
+
+			vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
+			container.add(outRemote);
+
+			error_computations.reset(new ErrorComputer(tkr_remote, outRemote));
+		}
+
 		/// Error computer must be created after and destroyed before the mainloop container
 		/// and its contents.
-		;
 		while (1) {
 			container.mainloop();
 			if (s && error_computations) {
@@ -101,6 +106,5 @@ int main(int argc, char * argv[]) {
 			vrpn_SleepMsecs(1);
 		}
 	}
-	error_computations.reset();
 	return 0;
 }
