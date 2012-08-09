@@ -1,0 +1,1 @@
+"%~dp0\error_server.exe" --port COM4 --baud 115200 --interval 100 --stride 1 | "%~dp0\wtee.exe" -a log.txt
