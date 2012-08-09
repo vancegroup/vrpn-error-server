@@ -20,6 +20,7 @@
 // Internal Includes
 #include "CommandOutput.h"
 #include "ErrorComputer.h"
+#include "CleanExit.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
@@ -68,6 +69,8 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
+	CleanExit::instance().registerHandlers();
+
 #ifdef _WIN32
 	WSADATA wsaData;
 	int status;
@@ -108,7 +111,8 @@ int main(int argc, char * argv[]) {
 
 		/// Error computer must be created after and destroyed before the mainloop container
 		/// and its contents.
-		while (1) {
+		VERBOSE_MSG("Starting mainloop.");
+		while (!CleanExit::instance().exitRequested()) {
 			container.mainloop();
 			if (s && error_computations) {
 				(*error_computations)();
@@ -116,6 +120,7 @@ int main(int argc, char * argv[]) {
 			s++;
 			vrpn_SleepMsecs(1);
 		}
+		VERBOSE_MSG("Exiting...")
 	}
 	return 0;
 }
