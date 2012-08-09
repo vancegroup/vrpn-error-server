@@ -135,7 +135,7 @@ inline void CommandOutput<NumChannels, CommandPrefix>::_changeHandler(const vrpn
 			struct timeval now;
 			vrpn_gettimeofday(&now, NULL);
 			if (vrpn_TimevalGreater(now, _nextMessage)) {
-				_nextMessage = vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval));
+				_nextMessage = vrpn_TimevalNormalize(vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval)));
 			} else {
 				return;
 			}
