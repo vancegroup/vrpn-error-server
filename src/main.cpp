@@ -40,6 +40,7 @@ int main(int argc, char * argv[]) {
 	long baud;
 	int strideNum;
 	bool externalSource;
+	double interval;
 	try {
 		// Define the command line object.
 		TCLAP::CmdLine cmd("Send appropriate error commands to a serial-connected controller", ' ',
@@ -50,6 +51,7 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
 		TCLAP::ValueArg<long> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
 		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
+		TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", cmd);
 		cmd.parse(argc, argv);
 
 		// Get the value parsed by each arg.
@@ -58,6 +60,7 @@ int main(int argc, char * argv[]) {
 		baud = baudrate.getValue();
 		strideNum = strideval.getValue();
 		externalSource = externalData.getValue();
+		interval = msginterval.getValue();
 	} catch (TCLAP::ArgException & e) {
 		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
 		return 1;
@@ -69,8 +72,9 @@ int main(int argc, char * argv[]) {
 	vrpn_Connection * c = vrpn_create_server_connection();
 	container.add(c);
 
-	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), port.c_str(), baud, c));
+	vrpn_SerialPort serialPort(port.c_str(), baud);
 
+	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
 	boost::scoped_ptr<ErrorComputer> error_computations;
 	if (!externalSource) {
 		container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));

@@ -47,17 +47,17 @@ class CommandOutput {
 
 		/// @brief Constructor
 		/// @param deviceName - a name to use for the vrpn_Analog_Output device it creates.
-		/// @param serialPortName - the name of the serial port (something like COM3 or /dev/ttyUSB0)
-		/// @param baud - serial port data rate
 		/// @param c - a vrpn_Connection to use if you have already created one (optional)
 		/// @param callback - a function/functor to call when serial data is received (optional)
 		/// @param commandStride - print the command only once in this many times (optional - default 20)
-		CommandOutput(const char * deviceName, const char * serialPortName, long baud, vrpn_Connection * c = NULL, DataHandlerCallback callback = DataHandlerCallback(), int commandStride = 20)
-			: _port(serialPortName, baud)
+		CommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0, DataHandlerCallback callback = DataHandlerCallback(), int commandStride = 20)
+			: _interval(interval)
+			, _port(port)
 			,  _handler(&type::_changeHandler, this)
 			, _callback(callback)
 			, _showCommandStride(commandStride) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
+			vrpn_gettimeofday(&_nextMessage, NULL);
 			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
 		}
 
@@ -72,6 +72,10 @@ class CommandOutput {
 			_callback = callback;
 		}
 
+		void setCommandInterval(double milliseconds) {
+			_interval = milliseconds;
+		}
+
 		/// @brief Mainloop function: must be called frequently to allow VRPN to
 		/// service requests
 		void mainloop();
@@ -82,8 +86,9 @@ class CommandOutput {
 		/// @brief Internal member function called when vrpn receives new values to output.
 		void _changeHandler(const vrpn_ANALOGOUTPUTCB info);
 
+		double _interval;
 
-		vrpn_SerialPort _port;
+		vrpn_SerialPort & _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
 		vrpn_Analog_Output_Change_Handler _handler;
@@ -97,6 +102,7 @@ class CommandOutput {
 		/// @brief Stride object to show only every n-th command
 		util::Stride _showCommandStride;
 
+		struct timeval _nextMessage;
 };
 
 
@@ -125,6 +131,15 @@ inline void CommandOutput<NumChannels, CommandPrefix>::_changeHandler(const vrpn
 
 	/// If the new command would be different than the last thing we sent
 	if (cmd.str() != _last_cmd) {
+		if (_interval != 0) {
+			struct timeval now;
+			vrpn_gettimeofday(&now, NULL);
+			if (vrpn_TimevalGreater(now, _nextMessage)) {
+				_nextMessage = vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval));
+			} else {
+				return;
+			}
+		}
 		_last_cmd = cmd.str();
 		if (_showCommandStride) {
 			log() << "SEND: " << cmd.str() << std::endl;
