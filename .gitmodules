@@ -1,3 +1,6 @@
 [submodule "vrpn"]
 	path = vrpn
 	url = https://github.com/rpavlik/vrpn.git
+[submodule "tuple-transmission"]
+	path = tuple-transmission
+	url = https://github.com/vancegroup/tuple-transmission.git
