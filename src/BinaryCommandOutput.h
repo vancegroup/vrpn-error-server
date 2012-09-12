@@ -1,0 +1,134 @@
+/** @file
+	@brief Header
+
+	@date 2012
+
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
+
+//          Copyright Iowa State University 2012.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+#ifndef INCLUDED_BinaryCommandOutput_h_GUID_4aa4e41d_6625_47d7_9066_8c8c4518db35
+#define INCLUDED_BinaryCommandOutput_h_GUID_4aa4e41d_6625_47d7_9066_8c8c4518db35
+
+// Internal Includes
+#include "vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h"
+#include <vrpn_Analog_Output.h>
+#include <vrpn_SerialPort.h>
+
+// Library/third-party includes
+#include <boost/mpl/size.hpp>
+#include <boost/fusion/include/array.hpp>
+#include <boost/fusion/include/transform.hpp>
+#include <tuple-transmission/Send.h>
+#include <tuple-transmission/BoundMessageType.h>
+#include <tuple-transmission/transmitters/AutosizedBoostArrayBuffer.h>
+#include <boost/scoped_ptr.hpp>
+
+// Standard includes
+#include <iostream>
+#include <algorithm>
+
+template < typename MessageCollection, typename MessageType >
+class BinaryCommandOutput {
+	public:
+		typedef BinaryCommandOutput<MessageCollection, MessageType> type;
+		typedef MessageType message_type;
+		typedef MessageCollection message_collection;
+		typedef boost::mpl::size<MessageType> message_channels;
+		typedef transmission::transmitters::AutosizedBoostArrayBuffer<transmission::BoundMessageType<MessageCollection, MessageType> > transmitter_type;
+		typedef typename transmitter_type::BufferType tx_buffer_type;
+
+		/// @brief Constructor
+		/// @param deviceName - a name to use for the vrpn_Analog_Output device it creates.
+		/// @param c - a vrpn_Connection to use if you have already created one (optional)
+		BinaryCommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0)
+			: _interval(interval)
+			, _port(port)
+			,  _handler(&type::_changeHandler, this)
+			, _last_cmd() {
+			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, message_channels()));
+			vrpn_gettimeofday(&_nextMessage, NULL);
+			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
+		}
+
+		/// @brief Destructor - remove change handler from contained Analog_Output server.
+		~BinaryCommandOutput() {
+			vrpn_Callbacks::unregister_change_handler(_out_server.get(), _handler);
+		}
+
+		void setCommandInterval(double milliseconds) {
+			_interval = milliseconds;
+		}
+
+		/// @brief Mainloop function: must be called frequently to allow VRPN to
+		/// service requests
+		void mainloop() {
+			_out_server->mainloop();
+
+		}
+	private:
+		/// @brief internal member function returning the stream for status messages.
+		std::ostream & log() const {
+			return std::cout;
+		}
+
+		/// @brief Internal member function called when vrpn receives new values to output.
+		void _changeHandler(const vrpn_ANALOGOUTPUTCB info);
+
+		double _interval;
+		vrpn_Analog_Output_Change_Handler _handler;
+		vrpn_SerialPort & _port;
+		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
+
+		/// @brief Contents of last command sent -
+		/// used to determine if an update should trigger sending a new command.
+		tx_buffer_type _last_cmd;
+
+		struct timeval _nextMessage;
+};
+
+
+struct CastToFloatWrapper {
+	typedef float result_type;
+	template<typename T>
+	float operator()(T val) const {
+		return static_cast<float>(val);
+	}
+};
+
+template < typename MessageCollection, typename MessageType >
+inline void BinaryCommandOutput<MessageCollection, MessageType>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
+	/// Copy data into a boost array.
+	boost::array<vrpn_float64, message_channels::value> data;
+	std::copy(info.channel, info.channel + message_channels(), data.begin());
+	transmitter_type tx;
+	transmission::send<MessageCollection, MessageType>(tx, boost::fusion::transform(data, CastToFloatWrapper()));
+
+	/// If the new command would be different than the last thing we sent
+	if (tx.buffer != _last_cmd) {
+		if (_interval != 0) {
+			struct timeval now;
+			vrpn_gettimeofday(&now, NULL);
+			if (vrpn_TimevalGreater(now, _nextMessage)) {
+				_nextMessage = vrpn_TimevalNormalize(vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval)));
+			} else {
+				return;
+			}
+		}
+		_last_cmd = tx.buffer;
+		log() << "SEND: " << std::endl;
+		_port.write(tx.buffer.data(), tx.buffer.size());
+	}
+}
+
+#endif // INCLUDED_BinaryCommandOutput_h_GUID_4aa4e41d_6625_47d7_9066_8c8c4518db35

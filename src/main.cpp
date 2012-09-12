@@ -18,6 +18,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
+#include "BinaryCommandOutput.h"
+#include "Protocol.h"
 #include "CommandOutput.h"
 #include "ErrorComputer.h"
 #include "CleanExit.h"
@@ -39,6 +41,8 @@ extern const char * vrpn_MAGIC;
 #define VERBOSE_MSG(X) std::cout << X << std::endl
 #define VERBOSE_DONE() std::cout << " done." << std::endl
 
+typedef BinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError> BinaryXYFloatOutput;
+
 int main(int argc, char * argv[]) {
 	std::string port;
 	std::string devName;
@@ -47,6 +51,7 @@ int main(int argc, char * argv[]) {
 	int portNum;
 	bool externalSource;
 	double interval;
+	bool useBinary;
 	try {
 		// Define the command line object.
 		TCLAP::CmdLine cmd("Send appropriate error commands to a serial-connected controller", ' ',
@@ -58,6 +63,7 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<int> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
 		TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", cmd);
 		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
+		TCLAP::SwitchArg binaryData("x", "binary", "use the binary command", cmd);
 		TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", cmd);
 		cmd.parse(argc, argv);
 
@@ -68,6 +74,7 @@ int main(int argc, char * argv[]) {
 		strideNum = strideval.getValue();
 		portNum = portnumval.getValue();
 		externalSource = externalData.getValue();
+		useBinary = binaryData.getValue();
 		interval = msginterval.getValue();
 	} catch (TCLAP::ArgException & e) {
 		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
@@ -99,9 +106,15 @@ int main(int argc, char * argv[]) {
 	vrpn_SerialPort serialPort(port.c_str(), baud);
 	VERBOSE_DONE();
 
-	VERBOSE_START("Creating command output server");
-	container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
-	VERBOSE_DONE();
+	if (useBinary) {
+		VERBOSE_START("Creating binary command output server");
+		container.add(new BinaryXYFloatOutput(devName.c_str(), serialPort, c, interval));
+		VERBOSE_DONE();
+	} else {
+		VERBOSE_START("Creating command output server");
+		container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
+		VERBOSE_DONE();
+	}
 
 
 	{

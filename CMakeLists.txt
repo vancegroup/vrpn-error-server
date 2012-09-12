@@ -38,6 +38,7 @@ find_package(Boost REQUIRED)
 
 set(TCLAP_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/tclap-1.2.1/include")
 
+set(TUPLE_TRANSMISSION_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/tuple-transmission")
 
 ###
 # Build the project
