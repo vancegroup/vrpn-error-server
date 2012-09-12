@@ -36,7 +36,7 @@ class vrpn_Analog_Output_Remote;
 class ErrorComputer : boost::noncopyable {
 	public:
 		enum {
-		    CHANNELS = 2
+			CHANNELS = 2
 		};
 		typedef boost::array<vrpn_float64, CHANNELS> ChannelArray;
 		ErrorComputer(vrpn_Tracker_Remote * tracker, vrpn_Analog_Output_Remote * output, int robot_sensor = 0, int goal_sensor = 1, size_t worldx = 0, size_t worldz = 1);
