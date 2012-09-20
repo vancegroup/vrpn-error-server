@@ -23,6 +23,7 @@
 #include "CommandOutput.h"
 #include "ErrorComputer.h"
 #include "CleanExit.h"
+#include "ReceiveEchoer.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
@@ -115,6 +116,11 @@ int main(int argc, char * argv[]) {
 		container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
 		VERBOSE_DONE();
 	}
+
+
+	VERBOSE_START("Creating receive echoer");
+	container.add(new ReceiveEchoer(serialPort));
+	VERBOSE_DONE();
 
 
 	{

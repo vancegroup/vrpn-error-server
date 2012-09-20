@@ -27,7 +27,6 @@
 
 // Library/third-party includes
 #include <boost/scoped_ptr.hpp>
-#include <boost/function.hpp>
 
 #include <util/Stride.h>
 
@@ -43,18 +42,16 @@ template < int NumChannels = 2, char CommandPrefix = 'E' >
 class CommandOutput {
 	public:
 		typedef CommandOutput<NumChannels, CommandPrefix> type;
-		typedef boost::function<void(std::string const&)> DataHandlerCallback;
 
 		/// @brief Constructor
 		/// @param deviceName - a name to use for the vrpn_Analog_Output device it creates.
 		/// @param c - a vrpn_Connection to use if you have already created one (optional)
 		/// @param callback - a function/functor to call when serial data is received (optional)
 		/// @param commandStride - print the command only once in this many times (optional - default 20)
-		CommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0, DataHandlerCallback callback = DataHandlerCallback(), int commandStride = 20)
+		CommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0, int commandStride = 20)
 			: _interval(interval)
 			, _port(port)
 			,  _handler(&type::_changeHandler, this)
-			, _callback(callback)
 			, _showCommandStride(commandStride) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, NumChannels));
 			vrpn_gettimeofday(&_nextMessage, NULL);
@@ -64,12 +61,6 @@ class CommandOutput {
 		/// @brief Destructor - remove change handler from contained Analog_Output server.
 		~CommandOutput() {
 			vrpn_Callbacks::unregister_change_handler(_out_server.get(), _handler);
-		}
-
-		/// @brief Set a function/functor to call when data is received over serial,
-		/// instead of printing it out.
-		void setDataCallback(DataHandlerCallback callback) {
-			_callback = callback;
 		}
 
 		void setCommandInterval(double milliseconds) {
@@ -96,9 +87,6 @@ class CommandOutput {
 		/// used to determine if an update should trigger sending a new command.
 		std::string _last_cmd;
 
-		/// @brief Callback to handle received serial data.
-		DataHandlerCallback _callback;
-
 		/// @brief Stride object to show only every n-th command
 		util::Stride _showCommandStride;
 
@@ -109,15 +97,6 @@ class CommandOutput {
 template<int NumChannels, char CommandPrefix>
 inline void CommandOutput<NumChannels, CommandPrefix>::mainloop() {
 	_out_server->mainloop();
-
-	std::string recv = _port.read_available_characters();
-	if (!recv.empty()) {
-		if (_callback) {
-			_callback(recv);
-		} else {
-			log() << "RECV: " << recv << std::endl;
-		}
-	}
 }
 
 template<int NumChannels, char CommandPrefix>
