@@ -22,6 +22,7 @@
 
 // Internal Includes
 #include "vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h"
+#include "VrpnSerialTransmitter.h"
 #include <vrpn_Analog_Output.h>
 #include <vrpn_SerialPort.h>
 
@@ -126,7 +127,7 @@ inline void BinaryCommandOutput<MessageCollection, MessageType>::_changeHandler(
 			}
 		}
 		_last_cmd = tx.buffer;
-		log() << "SEND: " << std::endl;
+		log() << "SEND: " << tx.buffer.size() << std::endl;
 		_port.write(tx.buffer.data(), tx.buffer.size());
 	}
 }

@@ -18,6 +18,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
+#include "VrpnSerialTransmitter.h"
 #include "BinaryCommandOutput.h"
 #include "Protocol.h"
 #include "CommandOutput.h"
@@ -31,6 +32,7 @@
 #include <vrpn_Tracker_RazerHydra.h>
 #include <util/Stride.h>
 #include <boost/scoped_ptr.hpp>
+#include <tuple-transmission/Send.h>
 
 // Standard includes
 #include <string>
@@ -140,6 +142,10 @@ int main(int argc, char * argv[]) {
 		/// Error computer must be created after and destroyed before the mainloop container
 		/// and its contents.
 		VERBOSE_MSG("Entering mainloop.");
+		if (useBinary) {
+			VrpnSerialTransmitter tx(serialPort);
+			transmission::send<Protocol::ComputerToRobot, Protocol::StartControl>(tx);
+		}
 		while (!CleanExit::instance().exitRequested()) {
 			container.mainloop();
 			if (s && error_computations) {
@@ -148,6 +154,12 @@ int main(int argc, char * argv[]) {
 			s++;
 			vrpn_SleepMsecs(1);
 		}
+		if (useBinary) {
+			VrpnSerialTransmitter tx(serialPort);
+			transmission::send<Protocol::ComputerToRobot, Protocol::EndControl>(tx);
+		}
+
+		container.mainloop();
 		VERBOSE_MSG("Exiting...");
 	}
 	return 0;
