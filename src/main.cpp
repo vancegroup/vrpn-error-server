@@ -18,18 +18,14 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
-#include "BinaryCommandOutput.h"
+#include "AppObject.h"
 #include "Protocol.h"
-#include "CommandOutput.h"
 #include "ErrorComputer.h"
-#include "CleanExit.h"
 #include "ReceiveEchoer.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
-#include <vrpn_MainloopContainer.h>
 #include <vrpn_Tracker_RazerHydra.h>
-#include <boost/scoped_ptr.hpp>
 #include <tuple-transmission/Send.h>
 #include <tuple-transmission/transmitters/VrpnSerial.h>
 
@@ -37,121 +33,71 @@
 #include <string>
 #include <iostream>
 
-extern const char * vrpn_MAGIC;
-
-#define VERBOSE_START(X) std::cout << X << "..." << std::flush
-#define VERBOSE_MSG(X) std::cout << X << std::endl
-#define VERBOSE_DONE() std::cout << " done." << std::endl
-
-typedef BinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError> BinaryXYFloatOutput;
-
 int main(int argc, char * argv[]) {
-	std::string port;
 	std::string devName;
-	long baud;
-	int portNum;
 	bool externalSource;
-	double interval;
 	bool useBinary;
-	try {
-		// Define the command line object.
-		TCLAP::CmdLine cmd("Send appropriate error commands to a serial-connected controller", ' ',
-		                   "1.0 (using " + std::string(vrpn_MAGIC) + ")");
 
-		TCLAP::ValueArg<std::string> portname("p", "port", "serial port name", true, "", "serial port", cmd);
-		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
-		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
-		TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", cmd);
-		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
-		TCLAP::SwitchArg binaryData("x", "binary", "use the binary command", cmd);
-		TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", cmd);
-		cmd.parse(argc, argv);
+	AppObject app("Send appropriate error commands to a serial-connected controller");
 
-		// Get the value parsed by each arg.
-		port = portname.getValue();
-		devName = outdevname.getValue();
-		baud = baudrate.getValue();
-		portNum = portnumval.getValue();
-		externalSource = externalData.getValue();
-		useBinary = binaryData.getValue();
-		interval = msginterval.getValue();
-	} catch (TCLAP::ArgException & e) {
-		std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
-		return 1;
-	}
+	TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name");
+	TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker");
+	TCLAP::SwitchArg binaryData("x", "binary", "use the binary command");
 
-	CleanExit::instance().registerHandlers();
+	app.addArgs(outdevname)(externalData)(binaryData);
 
-#ifdef _WIN32
-	WSADATA wsaData;
-	int status;
-	if ((status = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
-		std::cerr << "WSAStartup failed with " << status << std::endl;
-		return 1;
-	}
-	VERBOSE_MSG("WSAStartup completed");
-#endif // WIN32
+	app.parseAndBeginSetup(argc, argv);
+
+	// Get the value parsed by each arg.
+	devName = outdevname.getValue();
+	externalSource = externalData.getValue();
+	useBinary = binaryData.getValue();
 
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
-	vrpn_MainloopContainer container;
-	VERBOSE_START("Creating server connection on port " << portNum);
-	vrpn_Connection * c = vrpn_create_server_connection(portNum);
-	container.add(c);
-	VERBOSE_DONE();
-
-	VERBOSE_START("Opening serial port " << port);
-	vrpn_SerialPort serialPort(port.c_str(), baud);
-	VERBOSE_DONE();
 
 	if (useBinary) {
 		VERBOSE_START("Creating binary command output server");
-		container.add(new BinaryXYFloatOutput(devName.c_str(), serialPort, c, interval));
+		app.addBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError>(devName);
 		VERBOSE_DONE();
 	} else {
 		VERBOSE_START("Creating command output server");
-		container.add(new CommandOutput < 2, 'E' > (devName.c_str(), serialPort, c, interval));
+		app.addCommandOutput < 2, 'E' > (devName);
 		VERBOSE_DONE();
 	}
 
 
 	VERBOSE_START("Creating receive echoer");
-	container.add(new ReceiveEchoer(serialPort));
+	app.addToMainloop(new ReceiveEchoer(app.getSerialPort()));
 	VERBOSE_DONE();
 
+	if (!externalSource) {
+		app.addToMainloop(new vrpn_Tracker_RazerHydra("Tracker0", app.getConnection()));
 
-	{
-		boost::scoped_ptr<ErrorComputer> error_computations;
-		if (!externalSource) {
-			container.add(new vrpn_Tracker_RazerHydra("Tracker0", c));
+		vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", app.getConnection());
+		app.addToMainloop(tkr_remote);
 
-			vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote("Tracker0@localhost", c);
-			container.add(tkr_remote);
+		vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), app.getConnection());
+		app.addToMainloop(outRemote);
 
-			vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
-			container.add(outRemote);
-
-			container.add(new ErrorComputer(tkr_remote, outRemote));
-		}
-
-		/// Error computer must be created after and destroyed before the mainloop container
-		/// and its contents.
-		VERBOSE_MSG("Entering mainloop.");
-		if (useBinary) {
-			transmission::transmitters::VrpnSerial tx(serialPort);
-			transmission::send<Protocol::ComputerToRobot, Protocol::StartControl>(tx);
-		}
-		while (!CleanExit::instance().exitRequested()) {
-			container.mainloop();
-			vrpn_SleepMsecs(1);
-		}
-		if (useBinary) {
-			transmission::transmitters::VrpnSerial tx(serialPort);
-			transmission::send<Protocol::ComputerToRobot, Protocol::EndControl>(tx);
-		}
-
-		container.mainloop();
-		VERBOSE_MSG("Exiting...");
+		app.addToMainloop(new ErrorComputer(tkr_remote, outRemote));
 	}
+
+	if (useBinary) {
+		VERBOSE_START("Sending 'StartControl' command");
+		transmission::transmitters::VrpnSerial tx(app.getSerialPort());
+		transmission::send<Protocol::ComputerToRobot, Protocol::StartControl>(tx);
+		VERBOSE_DONE();
+	}
+	app.enterMainloop();
+	if (useBinary) {
+		VERBOSE_START("Sending 'EndControl' command");
+		transmission::transmitters::VrpnSerial tx(app.getSerialPort());
+		transmission::send<Protocol::ComputerToRobot, Protocol::EndControl>(tx);
+		VERBOSE_DONE();
+	}
+
+	app.runMainloopOnce();
+	VERBOSE_MSG("Exiting...");
 	return 0;
 }
