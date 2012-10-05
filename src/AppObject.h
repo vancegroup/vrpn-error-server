@@ -21,7 +21,8 @@
 #define INCLUDED_AppObject_h_GUID_cf6e4611_d60e_40ec_893c_5d57c79a1779
 
 // Internal Includes
-// - none
+#include "BinaryCommandOutput.h"
+#include "CommandOutput.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
@@ -58,6 +59,11 @@ class AppObject {
 
 		vrpn_SerialPort & getSerialPort() {
 			return _port;
+		}
+
+		template<typename Collection, typename MessageType, typename TransformFunctor>
+		void addAdvancedBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
 		}
 
 		template<typename Collection, typename MessageType>

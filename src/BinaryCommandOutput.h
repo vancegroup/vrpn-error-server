@@ -39,7 +39,18 @@
 #include <iostream>
 #include <algorithm>
 
-template < typename MessageCollection, typename MessageType >
+struct TransformFunctorBase {
+	typedef float result_type;
+};
+
+struct CastToFloatWrapper : TransformFunctorBase {
+	template<typename T>
+	float operator()(T val) const {
+		return static_cast<float>(val);
+	}
+};
+
+template < typename MessageCollection, typename MessageType, typename TransformFunctor = CastToFloatWrapper>
 class BinaryCommandOutput {
 	public:
 		typedef BinaryCommandOutput<MessageCollection, MessageType> type;
@@ -51,11 +62,13 @@ class BinaryCommandOutput {
 		/// @brief Constructor
 		/// @param deviceName - a name to use for the vrpn_Analog_Output device it creates.
 		/// @param c - a vrpn_Connection to use if you have already created one (optional)
-		BinaryCommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0)
+		BinaryCommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0, bool displaySendMessage = true)
 			: _interval(interval)
 			, _port(port)
 			, _handler(&type::_changeHandler, this)
-			, _tx(port) {
+			, _transform()
+			, _tx(port)
+			, _displayMessage(displaySendMessage) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, message_channels()));
 			vrpn_gettimeofday(&_nextMessage, NULL);
 			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
@@ -70,11 +83,14 @@ class BinaryCommandOutput {
 			_interval = milliseconds;
 		}
 
+		void setTransform(TransformFunctor const & newTransform) {
+			_transform = newTransform;
+		}
+
 		/// @brief Mainloop function: must be called frequently to allow VRPN to
 		/// service requests
 		void mainloop() {
 			_out_server->mainloop();
-
 		}
 	private:
 		/// @brief internal member function returning the stream for status messages.
@@ -90,39 +106,40 @@ class BinaryCommandOutput {
 		vrpn_SerialPort & _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
+		TransformFunctor _transform;
+
 		transmitter_type _tx;
 
+		bool _displayMessage;
+
+		struct timeval _lastMessage;
 		struct timeval _nextMessage;
 };
 
-
-struct CastToFloatWrapper {
-	typedef float result_type;
-	template<typename T>
-	float operator()(T val) const {
-		return static_cast<float>(val);
-	}
-};
-
-template < typename MessageCollection, typename MessageType >
-inline void BinaryCommandOutput<MessageCollection, MessageType>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
+template < typename MessageCollection, typename MessageType, typename TransformFunctor >
+inline void BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
 
 	/// Find out if it's time to report again.
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
 	if (_interval != 0) {
-		struct timeval now;
-		vrpn_gettimeofday(&now, NULL);
 		if (vrpn_TimevalGreater(now, _nextMessage)) {
 			_nextMessage = vrpn_TimevalNormalize(vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval)));
 		} else {
 			return;
 		}
 	}
-	log() << "SEND!" << std::endl;
+
+	_lastMessage = now;
+
+	if (_displayMessage) {
+		log() << "Send!" << std::endl;
+	}
 
 	/// Copy data into a boost array.
 	boost::array<vrpn_float64, message_channels::value> data;
 	std::copy(info.channel, info.channel + message_channels(), data.begin());
-	transmission::send<MessageCollection, MessageType>(_tx, boost::fusion::transform(data, CastToFloatWrapper()));
+	transmission::send<MessageCollection, MessageType>(_tx, boost::fusion::transform(data, _transform));
 }
 
 #endif // INCLUDED_BinaryCommandOutput_h_GUID_4aa4e41d_6625_47d7_9066_8c8c4518db35
