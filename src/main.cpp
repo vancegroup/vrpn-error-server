@@ -53,19 +53,11 @@ int main(int argc, char * argv[]) {
 	externalSource = externalData.getValue();
 	useBinary = binaryData.getValue();
 
-	/// MainloopContainer will hold and own (and thus appropriately delete)
-	/// anything we can give it that has a "mainloop" method.
-
 	if (useBinary) {
-		VERBOSE_START("Creating binary command output server");
 		app.addBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError>(devName);
-		VERBOSE_DONE();
 	} else {
-		VERBOSE_START("Creating command output server");
 		app.addCommandOutput < 2, 'E' > (devName);
-		VERBOSE_DONE();
 	}
-
 
 	VERBOSE_START("Creating receive echoer");
 	app.addToMainloop(new ReceiveEchoer(app.getSerialPort()));

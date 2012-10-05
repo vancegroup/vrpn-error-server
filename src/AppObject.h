@@ -77,18 +77,24 @@ class AppObject {
 		}
 
 		template<typename Collection, typename MessageType, typename TransformFunctor>
-		void addAdvancedBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+		void addCustomBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+			VERBOSE_START("Creating custom transform binary command output server: " << devName);
 			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
+			VERBOSE_DONE();
 		}
 
 		template<typename Collection, typename MessageType>
 		void addBinaryCommandOutput(std::string const & devName) {
+			VERBOSE_START("Creating binary command output server: " << devName);
 			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
+			VERBOSE_DONE();
 		}
 
 		template<int NumChannels, char CommandPrefix>
 		void addCommandOutput(std::string const & devName) {
+			VERBOSE_START("Creating ASCII command output server: " << devName);
 			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
+			VERBOSE_DONE();
 		}
 
 		void enterMainloop();
