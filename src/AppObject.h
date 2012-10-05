@@ -92,6 +92,10 @@ class AppObject {
 		}
 
 		void enterMainloop();
+
+		void runMainloopOnce() {
+			_container.mainloop();
+		}
 	private:
 		TCLAP::CmdLine _cmd;
 		CmdAdderProxy _adderProxy;
