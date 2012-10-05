@@ -82,7 +82,7 @@ void AppObject::addReceiveEchoer() {
 	VERBOSE_DONE();
 }
 
-void enterMainloop() {
+void AppObject::enterMainloop() {
 	while (!CleanExit::instance().exitRequested()) {
 		_container.mainloop();
 		vrpn_SleepMsecs(1);

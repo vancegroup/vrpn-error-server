@@ -62,15 +62,15 @@ class AppObject {
 
 		template<typename Collection, typename MessageType>
 		void addBinaryCommandOutput(std::string const & devName) {
-			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval);
+			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
 		}
 
-		               template<int NumChannels, char CommandPrefix>
+		template<int NumChannels, char CommandPrefix>
 		void addCommandOutput(std::string const & devName) {
-			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval);
+			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
 		}
 
-		               void addReceiveEchoer();
+		void addReceiveEchoer();
 
 		void enterMainloop();
 	private:
