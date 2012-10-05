@@ -22,7 +22,6 @@
 
 // Internal Includes
 #include "vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h"
-#include "VrpnSerialTransmitter.h"
 #include <vrpn_Analog_Output.h>
 #include <vrpn_SerialPort.h>
 
@@ -33,6 +32,7 @@
 #include <tuple-transmission/Send.h>
 #include <tuple-transmission/BoundMessageType.h>
 #include <tuple-transmission/transmitters/AutosizedBoostArrayBuffer.h>
+#include <tuple-transmission/transmitters/VrpnSerial.h>
 #include <boost/scoped_ptr.hpp>
 
 // Standard includes
@@ -46,8 +46,7 @@ class BinaryCommandOutput {
 		typedef MessageType message_type;
 		typedef MessageCollection message_collection;
 		typedef boost::mpl::size<MessageType> message_channels;
-		typedef transmission::transmitters::AutosizedBoostArrayBuffer<transmission::BoundMessageType<MessageCollection, MessageType> > transmitter_type;
-		typedef typename transmitter_type::BufferType tx_buffer_type;
+		typedef transmission::transmitters::VrpnSerial transmitter_type;
 
 		/// @brief Constructor
 		/// @param deviceName - a name to use for the vrpn_Analog_Output device it creates.
@@ -55,8 +54,8 @@ class BinaryCommandOutput {
 		BinaryCommandOutput(const char * deviceName, vrpn_SerialPort & port, vrpn_Connection * c = NULL, double interval = 0)
 			: _interval(interval)
 			, _port(port)
-			,  _handler(&type::_changeHandler, this)
-			, _last_cmd() {
+			, _handler(&type::_changeHandler, this)
+			, _tx(port) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, message_channels()));
 			vrpn_gettimeofday(&_nextMessage, NULL);
 			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
@@ -91,9 +90,7 @@ class BinaryCommandOutput {
 		vrpn_SerialPort & _port;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
-		/// @brief Contents of last command sent -
-		/// used to determine if an update should trigger sending a new command.
-		tx_buffer_type _last_cmd;
+		transmitter_type _tx;
 
 		struct timeval _nextMessage;
 };
@@ -109,27 +106,23 @@ struct CastToFloatWrapper {
 
 template < typename MessageCollection, typename MessageType >
 inline void BinaryCommandOutput<MessageCollection, MessageType>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
+
+	/// Find out if it's time to report again.
+	if (_interval != 0) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		if (vrpn_TimevalGreater(now, _nextMessage)) {
+			_nextMessage = vrpn_TimevalNormalize(vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval)));
+		} else {
+			return;
+		}
+	}
+	log() << "SEND!" << std::endl;
+
 	/// Copy data into a boost array.
 	boost::array<vrpn_float64, message_channels::value> data;
 	std::copy(info.channel, info.channel + message_channels(), data.begin());
-	transmitter_type tx;
-	transmission::send<MessageCollection, MessageType>(tx, boost::fusion::transform(data, CastToFloatWrapper()));
-
-	/// If the new command would be different than the last thing we sent
-	if (tx.buffer != _last_cmd) {
-		if (_interval != 0) {
-			struct timeval now;
-			vrpn_gettimeofday(&now, NULL);
-			if (vrpn_TimevalGreater(now, _nextMessage)) {
-				_nextMessage = vrpn_TimevalNormalize(vrpn_TimevalSum(now, vrpn_MsecsTimeval(_interval)));
-			} else {
-				return;
-			}
-		}
-		_last_cmd = tx.buffer;
-		log() << "SEND: " << tx.buffer.size() << std::endl;
-		_port.write(tx.buffer.data(), tx.buffer.size());
-	}
+	transmission::send<MessageCollection, MessageType>(_tx, boost::fusion::transform(data, CastToFloatWrapper()));
 }
 
 #endif // INCLUDED_BinaryCommandOutput_h_GUID_4aa4e41d_6625_47d7_9066_8c8c4518db35

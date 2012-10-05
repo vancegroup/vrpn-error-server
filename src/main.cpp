@@ -18,7 +18,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
-#include "VrpnSerialTransmitter.h"
 #include "BinaryCommandOutput.h"
 #include "Protocol.h"
 #include "CommandOutput.h"
@@ -33,6 +32,7 @@
 #include <util/Stride.h>
 #include <boost/scoped_ptr.hpp>
 #include <tuple-transmission/Send.h>
+#include <tuple-transmission/transmitters/VrpnSerial.h>
 
 // Standard includes
 #include <string>
@@ -143,7 +143,7 @@ int main(int argc, char * argv[]) {
 		/// and its contents.
 		VERBOSE_MSG("Entering mainloop.");
 		if (useBinary) {
-			VrpnSerialTransmitter tx(serialPort);
+			transmission::transmitters::VrpnSerial tx(serialPort);
 			transmission::send<Protocol::ComputerToRobot, Protocol::StartControl>(tx);
 		}
 		while (!CleanExit::instance().exitRequested()) {
@@ -155,7 +155,7 @@ int main(int argc, char * argv[]) {
 			vrpn_SleepMsecs(1);
 		}
 		if (useBinary) {
-			VrpnSerialTransmitter tx(serialPort);
+			transmission::transmitters::VrpnSerial tx(serialPort);
 			transmission::send<Protocol::ComputerToRobot, Protocol::EndControl>(tx);
 		}
 
