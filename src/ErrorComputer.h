@@ -43,7 +43,7 @@ class ErrorComputer : boost::noncopyable {
 		~ErrorComputer();
 
 		/// Compute and send updated error, if applicable.
-		void operator()();
+		void mainloop();
 	private:
 		void _handleRobot(const vrpn_TRACKERCB info);
 		void _handleGoal(const vrpn_TRACKERCB info);

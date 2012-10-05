@@ -29,7 +29,6 @@
 #include <tclap/CmdLine.h>
 #include <vrpn_MainloopContainer.h>
 #include <vrpn_Tracker_RazerHydra.h>
-#include <util/Stride.h>
 #include <boost/scoped_ptr.hpp>
 #include <tuple-transmission/Send.h>
 #include <tuple-transmission/transmitters/VrpnSerial.h>
@@ -50,7 +49,6 @@ int main(int argc, char * argv[]) {
 	std::string port;
 	std::string devName;
 	long baud;
-	int strideNum;
 	int portNum;
 	bool externalSource;
 	double interval;
@@ -63,7 +61,6 @@ int main(int argc, char * argv[]) {
 		TCLAP::ValueArg<std::string> portname("p", "port", "serial port name", true, "", "serial port", cmd);
 		TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name", cmd);
 		TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", cmd);
-		TCLAP::ValueArg<int> strideval("s", "stride", "stride between messages (number skipped per 1 sent)", false, 1, "stride", cmd);
 		TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", cmd);
 		TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker", cmd);
 		TCLAP::SwitchArg binaryData("x", "binary", "use the binary command", cmd);
@@ -74,7 +71,6 @@ int main(int argc, char * argv[]) {
 		port = portname.getValue();
 		devName = outdevname.getValue();
 		baud = baudrate.getValue();
-		strideNum = strideval.getValue();
 		portNum = portnumval.getValue();
 		externalSource = externalData.getValue();
 		useBinary = binaryData.getValue();
@@ -96,7 +92,6 @@ int main(int argc, char * argv[]) {
 	VERBOSE_MSG("WSAStartup completed");
 #endif // WIN32
 
-	util::Stride s(strideNum);
 	/// MainloopContainer will hold and own (and thus appropriately delete)
 	/// anything we can give it that has a "mainloop" method.
 	vrpn_MainloopContainer container;
@@ -136,7 +131,7 @@ int main(int argc, char * argv[]) {
 			vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), c);
 			container.add(outRemote);
 
-			error_computations.reset(new ErrorComputer(tkr_remote, outRemote));
+			container.add(new ErrorComputer(tkr_remote, outRemote));
 		}
 
 		/// Error computer must be created after and destroyed before the mainloop container
@@ -148,10 +143,6 @@ int main(int argc, char * argv[]) {
 		}
 		while (!CleanExit::instance().exitRequested()) {
 			container.mainloop();
-			if (s && error_computations) {
-				(*error_computations)();
-			}
-			s++;
 			vrpn_SleepMsecs(1);
 		}
 		if (useBinary) {

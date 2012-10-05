@@ -63,7 +63,7 @@ void ErrorComputer::_handleGoal(const vrpn_TRACKERCB info) {
 	//std::cout << "Goal: " << _positionGoal[0] << ", " << _positionGoal[1] << ", " << _positionGoal[2] << std::endl;
 }
 
-void ErrorComputer::operator()() {
+void ErrorComputer::mainloop() {
 	if (_gotGoal && _gotRobot) {
 		std::valarray<double> error = _positionGoal - _positionRobot;
 
