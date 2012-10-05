@@ -40,6 +40,17 @@
 
 class vrpn_Connection;
 
+class CmdAdderProxy {
+	public:
+		CmdAdderProxy(TCLAP::CmdLine & commandLine) : _cmd(commandLine) {}
+		CmdAdderProxy & operator()(TCLAP::Arg & a) {
+			_cmd.add(a);
+			return *this;
+		}
+	private:
+		TCLAP::CmdLine & _cmd;
+};
+
 /// @brief An object to use for shared code between the various executables
 class AppObject {
 	public:
@@ -47,6 +58,10 @@ class AppObject {
 		~AppObject();
 
 		void parseAndBeginSetup(int argc, const char * const * argv);
+
+		CmdAdderProxy & addArgs(TCLAP::Arg & a) {
+			return _adderProxy(a);
+		}
 
 		template<typename T>
 		void addToMainloop(T obj) {
@@ -79,6 +94,7 @@ class AppObject {
 		void enterMainloop();
 	private:
 		TCLAP::CmdLine _cmd;
+		CmdAdderProxy _adderProxy;
 		vrpn_Connection * _c;
 		vrpn_SerialPort _port;
 		vrpn_MainloopContainer _container;
