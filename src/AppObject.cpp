@@ -20,20 +20,18 @@
 // Internal Includes
 #include "AppObject.h"
 #include "CleanExit.h"
-#include "ReceiveEchoer.h"
 
 // Library/third-party includes
 #include <vrpn_Configure.h>
 
 // Standard includes
-#include <string>
 #include <cstdlib>
 
 extern const char * vrpn_MAGIC;
 
-AppObject::AppObject()
-	: _cmd("Send appropriate error commands to a serial-connected controller", ' ',
-	       "1.0 (using " + std::string(vrpn_MAGIC) + ")")
+AppObject::AppObject(const char * usageMessage)
+	: _cmd(usageMessage, ' ', "1.0 (using " + std::string(vrpn_MAGIC) + ")")
+	, _adderProxy(_cmd)
 	, _c(NULL)
 	, _port()
 	, _container()
@@ -53,6 +51,12 @@ AppObject::AppObject()
 	VERBOSE_MSG("WSAStartup completed");
 #endif // WIN32
 
+}
+
+AppObject::~AppObject() {
+#ifdef _WIN32
+	WSACleanup();
+#endif
 }
 
 void AppObject::parseAndBeginSetup(int argc, const char * const * argv) {
@@ -76,15 +80,12 @@ void AppObject::parseAndBeginSetup(int argc, const char * const * argv) {
 	_interval = msginterval.getValue();
 }
 
-void AppObject::addReceiveEchoer() {
-	VERBOSE_START("Creating receive echoer");
-	_container.add(new ReceiveEchoer(_port));
-	VERBOSE_DONE();
-}
-
 void AppObject::enterMainloop() {
+
+	VERBOSE_MSG("Mainloop starting.");
 	while (!CleanExit::instance().exitRequested()) {
 		_container.mainloop();
 		vrpn_SleepMsecs(1);
 	}
+	VERBOSE_MSG(std::endl << "Mainloop stopping.");
 }

@@ -43,7 +43,7 @@ class vrpn_Connection;
 /// @brief An object to use for shared code between the various executables
 class AppObject {
 	public:
-		AppObject();
+		AppObject(const char * usageMessage);
 		~AppObject();
 
 		void parseAndBeginSetup(int argc, const char * const * argv);
@@ -75,8 +75,6 @@ class AppObject {
 		void addCommandOutput(std::string const & devName) {
 			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
 		}
-
-		void addReceiveEchoer();
 
 		void enterMainloop();
 	private:
