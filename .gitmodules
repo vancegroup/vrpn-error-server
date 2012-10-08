@@ -4,3 +4,6 @@
 [submodule "tuple-transmission"]
 	path = tuple-transmission
 	url = https://github.com/vancegroup/tuple-transmission.git
+[submodule "loki-lib"]
+	path = loki-lib
+	url = https://github.com/rpavlik/loki-lib.git
