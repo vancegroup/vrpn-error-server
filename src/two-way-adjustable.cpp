@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
 	TCLAP::ValueArg<int> worldX("x", "worldX", "index of world x axis from tracker", false, 0, "axis index 0-2");
 	TCLAP::ValueArg<int> worldZ("z", "worldZ", "index of world z axis from tracker", false, 1, "axis index 0-2");
 
-	app.addArgs(outdevname)(gain)(computeErr)(hydra)(trackerName)(actual)(desired)(worldX)(worldZ);
+	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ);
 
 	app.parseAndBeginSetup(argc, argv);
 
