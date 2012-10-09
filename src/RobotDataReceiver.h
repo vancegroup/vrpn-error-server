@@ -21,18 +21,18 @@
 #define INCLUDED_RobotDataReceiver_h_GUID_dc50a193_9d2b_47b0_a1fe_8224495b27a3
 
 // Internal Includes
-// - none
+#include "Protocol.h"
 
 // Library/third-party includes
 #include <tuple-transmission/receiveadapters/VrpnSerial.h>
+#include <tuple-transmission/Receiver.h>
 #include <vrpn_Connection.h>
 #include <boost/shared_ptr.hpp>
-#include <vrpn_MainloopContainer.h>
 
 // Standard includes
 // - none
 
-class BinaryMessageHandler;
+class VRPNReceiveHandlerManager;
 
 class RobotDataReceiver {
 	public:
@@ -41,8 +41,8 @@ class RobotDataReceiver {
 		void mainloop();
 	private:
 		transmission::VrpnSerialReceiveAdapter _recvAdapter;
-		boost::shared_ptr<BinaryMessageHandler> _handler;
-		vrpn_MainloopContainer _container;
+		transmission::Receiver<Protocol::RobotToComputer> _recv;
+		boost::shared_ptr<VRPNReceiveHandlerManager> _handler;
 };
 
 #endif // INCLUDED_RobotDataReceiver_h_GUID_dc50a193_9d2b_47b0_a1fe_8224495b27a3

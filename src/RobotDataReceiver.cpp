@@ -20,8 +20,8 @@
 // Internal Includes
 #include "RobotDataReceiver.h"
 #include "BinaryAnalogMessage.h"
-#include "BinaryMessageHandler.h"
 #include "Protocol.h"
+#include "FlexibleReceiveHandlerManager.h"
 
 // Library/third-party includes
 
@@ -29,23 +29,19 @@
 // - none
 
 
-RobotDataReceiver::RobotDataReceiver(const char * basename, vrpn_Connection * c, vrpn_SerialPort & port) : _recvAdapter(port) {
+RobotDataReceiver::RobotDataReceiver(const char * basename, vrpn_Connection * c, vrpn_SerialPort & port)
+	: _recvAdapter(port)
+	, _handler(new VRPNReceiveHandlerManager) {
 	std::string base(basename);
-
-	BinaryAnalogMessage<Protocol::CurrentWheelVelocities> * rpm = new BinaryCommandAnalog<Protocol::CurrentWheelVelocities>((base + "RPM").c_str(), c);
-	_container.add(rpm);
-
-	BinaryAnalogMessage<Protocol::CurrentPWMOutput> * pwm = new BinaryCommandAnalog<Protocol::CurrentPWMOutput>((base + "PWM").c_str(), c);
-	_container.add(pwm);
-
-	_handler.reset(BinaryMessageHandler::createNew()(rpm)(pwm).handleCollection<Protocol::RobotToComputer>());
+	_handler->registerHandlerSet(_recv)
+	(new BinaryAnalogMessage<Protocol::CurrentWheelVelocities>((base + "RPM").c_str(), c))
+	(new BinaryAnalogMessage<Protocol::CurrentPWMOutput>((base + "PWM").c_str(), c));
 }
 
 void RobotDataReceiver::mainloop() {
-	unsigned int bytes = _handler->getReceiver().receiveFrom(_recvAdapter);
+	unsigned int bytes = _recv.receiveFrom(_recvAdapter);
 	if (bytes > 0) {
-		_handler->getReceiver().processMessages();
+		_recv.processMessages();
 	}
-	_handler.mainloop();
-	_container.mainloop();
+	_handler->mainloop();
 }
