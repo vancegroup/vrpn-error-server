@@ -83,7 +83,6 @@ int main(int argc, char * argv[]) {
 		VERBOSE_DONE();
 	}
 
-	app.runMainloopOnce();
 	VERBOSE_MSG("Exiting...");
 	return 0;
 }

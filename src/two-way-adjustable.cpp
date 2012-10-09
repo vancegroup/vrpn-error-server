@@ -102,7 +102,6 @@ int main(int argc, char * argv[]) {
 	transmission::send<Protocol::ComputerToRobot, Protocol::EndControl>(tx);
 	VERBOSE_DONE();
 
-	app.runMainloopOnce();
 	VERBOSE_MSG("Exiting...");
 	return 0;
 }
