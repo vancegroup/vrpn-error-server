@@ -39,9 +39,19 @@
 // - none
 
 class CastToFloat64 {
-		typedef vrpn_float64 result;
+	public:
+		/*
+		template<typename Sig>
+		struct result;
+
+		template<typename Self, typename T>
+		struct result<Self(T)> {
+		    typedef vrpn_float64 type;
+		};
+		*/
+		typedef vrpn_float64 result_type;
 		template<typename T>
-		vrpn_float64 operator()(T const& v) {
+		vrpn_float64 operator()(T v) const {
 			return static_cast<vrpn_float64>(v);
 		}
 };

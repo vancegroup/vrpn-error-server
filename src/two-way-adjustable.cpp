@@ -35,10 +35,11 @@
 #include <iostream>
 
 struct ScaleAndCastToIntTransform {
-	ScaleAndCastTransform(vrpn_float64 gain) : Kp(gain) {}
+	ScaleAndCastToIntTransform() : Kp(1) {}
+	ScaleAndCastToIntTransform(vrpn_float64 gain) : Kp(gain) {}
 	typedef stdint::int16_t result_type;
 	template<typename T>
-	stdint::int16_t operator()(T input) {
+	stdint::int16_t operator()(T input) const {
 		return static_cast<stdint::int16_t>(input * Kp);
 	}
 
