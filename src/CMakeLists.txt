@@ -1,5 +1,5 @@
 
-include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS} ${TUPLE_TRANSMISSION_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/..")
+include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS} ${TUPLE_TRANSMISSION_INCLUDE_DIRS} ${LOKILIB_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 set(LIB_SOURCES
 	vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h
@@ -9,6 +9,7 @@ set(LIB_SOURCES
 
 	AppObject.cpp
 	AppObject.h
+	BinaryAnalogMessage.h
 	BinaryCommandOutput.h
 	CleanExit.cpp
 	CleanExit.h
@@ -17,10 +18,15 @@ set(LIB_SOURCES
 	ErrorComputer.h
 	Protocol.h
 	ReceiveEchoer.h
+	RobotDataReceiver.cpp
+	RobotDataReceiver.h
 	vrpn_SemaphoreGuard.h)
 add_library(server-common STATIC ${LIB_SOURCES})
 target_link_libraries(server-common ${VRPN_LIBRARIES})
 
 add_executable(error_server main.cpp)
 target_link_libraries(error_server server-common)
+
+add_executable(two_way_adjustable_server two-way-adjustable.cpp)
+target_link_libraries(two_way_adjustable_server server-common)
 
