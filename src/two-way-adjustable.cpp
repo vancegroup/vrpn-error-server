@@ -75,11 +75,9 @@ int main(int argc, char * argv[]) {
 		if (hydra.getValue()) {
 			app.addToMainloop(new vrpn_Tracker_RazerHydra("Tracker0", app.getConnection()));
 		}
-		vrpn_Tracker_Remote * tkr_remote = new vrpn_Tracker_Remote(trackerName.getValue().c_str(), app.getConnection());
-		app.addToMainloop(tkr_remote);
+		vrpn_Tracker_Remote * tkr_remote = app.addToMainloop(new vrpn_Tracker_Remote(trackerName.getValue().c_str(), app.getConnection()));
 
-		vrpn_Analog_Output_Remote * outRemote = new vrpn_Analog_Output_Remote(devName.c_str(), app.getConnection());
-		app.addToMainloop(outRemote);
+		vrpn_Analog_Output_Remote * outRemote = app.addToMainloop(new vrpn_Analog_Output_Remote(devName.c_str(), app.getConnection()));
 
 		app.addToMainloop(new ErrorComputer(tkr_remote, outRemote, actual.getValue(), desired.getValue(), worldX.getValue(), worldZ.getValue()));
 	}
