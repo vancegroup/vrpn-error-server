@@ -7,17 +7,24 @@ set(LIB_SOURCES
 	vrpn_Callbacks/vrpn_Connection_Callbacks.h
 	vrpn_Callbacks/vrpn_Tracker_Callbacks.h
 
+	FlexReceive/Impl.h
+	FlexReceive/MainloopContainerAddFunctor.h
+	FlexReceive/Manager.h
+	FlexReceive/Metafunctions.h
+	FlexReceive/PushToPointerVecFunctor.h
+	FlexReceive/Registration.h
+	FlexReceive/Types.h
+	FlexReceive/VRPNHandlerManager.h
+
 	AppObject.cpp
 	AppObject.h
 	BinaryAnalogMessage.h
 	BinaryCommandOutput.h
-	#BinaryMessageHandler.h
 	CleanExit.cpp
 	CleanExit.h
 	CommandOutput.h
 	ErrorComputer.cpp
 	ErrorComputer.h
-	FlexibleReceiveHandlerManager.h
 	Protocol.h
 	ReceiveEchoer.h
 	RobotDataReceiver.cpp
