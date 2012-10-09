@@ -11,11 +11,13 @@ set(LIB_SOURCES
 	AppObject.h
 	BinaryAnalogMessage.h
 	BinaryCommandOutput.h
+	#BinaryMessageHandler.h
 	CleanExit.cpp
 	CleanExit.h
 	CommandOutput.h
 	ErrorComputer.cpp
 	ErrorComputer.h
+	FlexibleReceiveHandlerManager.h
 	Protocol.h
 	ReceiveEchoer.h
 	RobotDataReceiver.cpp
