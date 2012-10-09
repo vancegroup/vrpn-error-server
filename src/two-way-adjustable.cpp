@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
 
 	devName = outdevname.getValue();
 
-	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntError>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
+	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
 
 	if (computeErr.getValue()) {
 		if (hydra.getValue()) {
