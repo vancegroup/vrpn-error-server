@@ -22,6 +22,7 @@
 
 // Internal Includes
 #include "Protocol.h"
+#include "FlexReceive/Types.h"
 
 // Library/third-party includes
 #include <tuple-transmission/receiveadapters/VrpnSerial.h>
@@ -32,8 +33,6 @@
 // Standard includes
 // - none
 
-class VRPNReceiveHandlerManager;
-
 class RobotDataReceiver {
 	public:
 		RobotDataReceiver(const char * basename, vrpn_Connection * c, vrpn_SerialPort & port);
@@ -42,7 +41,7 @@ class RobotDataReceiver {
 	private:
 		transmission::VrpnSerialReceiveAdapter _recvAdapter;
 		transmission::Receiver<Protocol::RobotToComputer> _recv;
-		boost::shared_ptr<VRPNReceiveHandlerManager> _handler;
+		boost::shared_ptr<FlexReceive::VRPNHandlerManager> _handler;
 };
 
 #endif // INCLUDED_RobotDataReceiver_h_GUID_dc50a193_9d2b_47b0_a1fe_8224495b27a3

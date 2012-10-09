@@ -21,7 +21,7 @@
 #include "RobotDataReceiver.h"
 #include "BinaryAnalogMessage.h"
 #include "Protocol.h"
-#include "FlexibleReceiveHandlerManager.h"
+#include "FlexReceive/VRPNHandlerManager.h"
 
 // Library/third-party includes
 
@@ -31,11 +31,11 @@
 
 RobotDataReceiver::RobotDataReceiver(const char * basename, vrpn_Connection * c, vrpn_SerialPort & port)
 	: _recvAdapter(port)
-	, _handler(new VRPNReceiveHandlerManager) {
+	, _handler(new FlexReceive::VRPNHandlerManager) {
 	std::string base(basename);
 	_handler->registerHandlerSet(_recv)
-	(new BinaryAnalogMessage<Protocol::CurrentWheelVelocities>((base + "RPM").c_str(), c))
-	(new BinaryAnalogMessage<Protocol::CurrentPWMOutput>((base + "PWM").c_str(), c));
+	.registerHandler(new BinaryAnalogMessage<Protocol::CurrentWheelVelocities>((base + "RPM").c_str(), c))
+	.registerHandler(new BinaryAnalogMessage<Protocol::CurrentPWMOutput>((base + "PWM").c_str(), c));
 }
 
 void RobotDataReceiver::mainloop() {
