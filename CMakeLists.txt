@@ -40,6 +40,8 @@ set(TCLAP_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/tclap-1.2.1/include")
 
 set(TUPLE_TRANSMISSION_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/tuple-transmission")
 
+set(LOKILIB_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/loki-lib/include")
+
 ###
 # Build the project
 ###
