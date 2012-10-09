@@ -54,14 +54,14 @@ int main(int argc, char * argv[]) {
 	AppObject app("Send appropriate error commands to a serial-connected controller, and serving status messages as a vrpn_Analog");
 
 	TCLAP::ValueArg<std::string> outdevname("d", "devname", "base name of devices to create", false, "Robot", "device name");
-	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000);
+	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
 	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", false);
 	TCLAP::SwitchArg hydra("h", "hydra", "create built-in Hydra server", false);
-	TCLAP::ValueArg<std::string> trackerName("t", "trackername", "tracker device to access if computing error internally", false, "Tracker0@localhost", "device name");
-	TCLAP::ValueArg<int> actual("a", "actual", "channel number for the 'actual' tracking sensor", false, 0);
-	TCLAP::ValueArg<int> desired("d", "desired", "channel number for the 'desired' tracking sensor", false, 1);
-	TCLAP::ValueArg<int> worldX("x", "worldX", "index of world x axis from tracker", false, 0);
-	TCLAP::ValueArg<int> worldZ("z", "worldZ", "index of world z axis from tracker", false, 1);
+	TCLAP::ValueArg<std::string> trackerName("t", "trackername", "tracker device to access if computing error internally", false, "Tracker0@localhost", "VRPN device name");
+	TCLAP::ValueArg<int> actual("a", "actual", "channel number for the 'actual' tracking sensor", false, 0, "channel number");
+	TCLAP::ValueArg<int> desired("d", "desired", "channel number for the 'desired' tracking sensor", false, 1, "channel number");
+	TCLAP::ValueArg<int> worldX("x", "worldX", "index of world x axis from tracker", false, 0, "axis index 0-2");
+	TCLAP::ValueArg<int> worldZ("z", "worldZ", "index of world z axis from tracker", false, 1, "axis index 0-2");
 
 	app.addArgs(outdevname)(gain)(computeErr)(hydra)(trackerName)(actual)(desired)(worldX)(worldZ);
 
@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
 
 	devName = outdevname.getValue();
 
-	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntError>(devName, ScaleAndCastToIntTransform(gain.getValue()));
+	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntError>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
 
 	if (computeErr.getValue()) {
 		if (hydra.getValue()) {
@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	VERBOSE_START("Creating robot data receiver devices");
-	app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()))
+	app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()));
 	VERBOSE_DONE();
 
 	VERBOSE_START("Sending 'StartControl' command");
