@@ -9,9 +9,9 @@
 	This GUID can help identify the project: d1dbc94e-e863-49cf-bc08-ab4d9f486613
 
 	This copy of the header is from the revision that Git calls
-	c6c97c37378c23b7ccc5740dd10d8728cd35e1b0
+	b79d54c2bc7fd2958fc73eec5e5a6c4333447a79
 
-	Commit date: "2012-10-08 16:00:22 -0500"
+	Commit date: "2012-10-09 15:41:14 -0500"
 
 	@author
 	Ryan Pavlik

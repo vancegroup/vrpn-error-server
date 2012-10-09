@@ -1,6 +1,16 @@
 /**	@file
 	@brief	A class for handling "do this every n times"
 
+	This header is maintained as a part of 'util-headers' - you can always
+	find the latest version online at https://github.com/vancegroup/util-headers
+
+	This GUID can help identify the project: d1dbc94e-e863-49cf-bc08-ab4d9f486613
+
+	This copy of the header is from the revision that Git calls
+	b79d54c2bc7fd2958fc73eec5e5a6c4333447a79
+
+	Commit date: "2012-10-09 15:41:14 -0500"
+
 	@date
 	2009-2010
 
