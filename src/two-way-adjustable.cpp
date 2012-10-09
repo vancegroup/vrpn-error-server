@@ -50,7 +50,7 @@ int main(int argc, char * argv[]) {
 
 	AppObject app("Send appropriate integer velocity/error commands to a serial-connected controller, and serving status messages as a vrpn_Analog");
 
-	TCLAP::ValueArg<std::string> outdevname("d", "devname", "base name of devices to create", false, "Robot", "device name");
+	TCLAP::ValueArg<std::string> outdevname("", "devname", "base name of devices to create", false, "Robot", "device name");
 	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
 	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", false);
 	TCLAP::SwitchArg razerhydra("r", "razer", "create built-in Razer Hydra server", false);
