@@ -24,6 +24,8 @@
 // - none
 
 // Library/third-party includes
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/map.hpp>
@@ -71,7 +73,7 @@ namespace FlexReceive {
 
 				template<typename M, typename Sequence>
 				void operator()(M const&,
-				                Sequence const& s,
+				                Sequence const&,
 				                typename M::message_type_tag * = NULL,
 				                typename boost::disable_if<boost::mpl::has_key<MessageHandlerMap, M> >::type * = NULL) {
 					/* unhandled message */
@@ -79,8 +81,8 @@ namespace FlexReceive {
 
 			private:
 				friend class FlexibleReceiveHandlerManager;
-				FlexibleReceiveHandlerImpl(TypeHandlerMap & handlers) : _handlers(handlers) {}
-				TypeHandlerMap & _handlers;
+				FlexibleReceiveHandlerImpl(Types::TypeHandlerMap & handlers) : _handlers(handlers) {}
+				Types::TypeHandlerMap & _handlers;
 		};
 
 	} // end of namespace Impl
@@ -89,15 +91,14 @@ namespace FlexReceive {
 
 		template<typename ReceiverType, typename HandlerOwnerAdditionFunctor>
 		struct RegData {
-			RegData(Types::TypeHandlerMap & handlers, Types::FlexRecvBasePtr & ptr, Types::GenericHandlerPtrVec handlerOwner, ReceiverType & recv)
+			RegData(Types::TypeHandlerMap & handlers, Types::FlexRecvBasePtr & ptr, HandlerOwnerAdditionFunctor ownHandler, ReceiverType & recv)
 				: _handlers(handlers)
 				, _ptr(ptr)
-				, _handlerOwner(handlerOwner)
+				, _ownHandler(ownHandler)
 				, _recv(recv) {}
 
 			Types::TypeHandlerMap & _handlers;
 			Types::FlexRecvBasePtr & _ptr;
-			Types::GenericHandlerPtrVec & _handlerOwner;
 			HandlerOwnerAdditionFunctor _ownHandler;
 			ReceiverType & _recv;
 		};
@@ -112,7 +113,7 @@ namespace FlexReceive {
 
 				template<typename TypeMap, typename Message, typename Handler>
 				struct ReturnType {
-					typedef RegProxy<typename boost::mpl::insert<TypeMap, mpl::pair<Message, Handler> >::type, RegistrationData> type;
+					typedef RegProxy<typename boost::mpl::insert<TypeMap, boost::mpl::pair<Message, Handler> >::type, RegistrationData> type;
 				};
 
 				template<typename TypeMap, typename Message, typename Handler>
@@ -125,7 +126,7 @@ namespace FlexReceive {
 				template<typename TypeMap>
 				void instantiateImplementationAndSetHandler() {
 					/// Create new overall handler implementation managed by a specific shared_ptr
-					boost::shared_ptr<FlexibleReceiveHandlerImpl<TypeMap> > handlerImpl(new FlexibleReceiveHandlerImpl<TypeMap>(_data._handlers));
+					boost::shared_ptr<Impl::FlexibleReceiveHandlerImpl<TypeMap> > handlerImpl(new Impl::FlexibleReceiveHandlerImpl<TypeMap>(_data._handlers));
 					/// Register this overall handler with the receiver.
 					_data._recv.setHandler(*handlerImpl);
 
@@ -142,28 +143,29 @@ namespace FlexReceive {
 		template<typename TypeMap, typename RegistrationData>
 		class RegProxy : public RegProxyBase<RegistrationData> {
 			public:
+				typedef RegProxyBase<RegistrationData> base;
+
 				template<typename Handler>
-				typename ReturnType<TypeMap, typename Handler::message_type, Handler>::type
+				typename base::template ReturnType<TypeMap, typename Handler::message_type, Handler>::type
 				operator()(Handler * h) {
 					/// Transfer ownership of this handler to the handler manager
-					boost::shared_ptr<Handler> hPtr(h);
-					_data._handleOwner.push_back(hPtr);
+					base::_data._ownHandler(h);
 
 					/// Insert this handler into the map
 					typedef typename Handler::message_type Message;
-					_data._handlers.insert(std::pair<util::TypeId, void *>(typeid(Message), h));
+					base::_data._handlers.insert(std::pair<util::TypeId, void *>(typeid(Message), h));
 
 					/// Return next proxy for additional
-					return createNextProxy<TypeMap, Message, Handler>();
+					return this->createNextProxy<TypeMap, Message, Handler>();
 				}
 
-				~HandlerRegistrationProxy() {
-					if (_isLast) {
+				~RegProxy() {
+					if (base::_isLast) {
 						/// We are the return value from the last functor call,
 						/// and were unused (didn't get called) - so we have
 						/// accumulated full type knowledge. Use it, before we
 						/// lose it.
-						instantiateImplementationAndSetHandler<TypeMap>();
+						base::instantiateImplementationAndSetHandler<TypeMap>();
 					}
 				}
 			private:
@@ -198,9 +200,10 @@ class FlexibleReceiveHandlerManager {
 		template<typename MessageCollection>
 		typename EmptyRegProxy<MessageCollection, GenericAddFunctorType>::type
 		registerHandlerSet(transmission::Receiver<MessageCollection> & recv) {
+			using namespace boost;
 			prepareToRegisterHandlerSet(recv);
 			_handlerOwner.clear();
-			return registerHandlerSetImpl<MessageCollection, GenericAddFunctorType>(recv, boost::bind(&FlexReceive::Types::GenericHandlerPtrVec::push_back, boost::ref(_handlerOwner), boost::_1));
+			return registerHandlerSetImpl<MessageCollection, GenericAddFunctorType>(recv, bind(&FlexReceive::Types::GenericHandlerPtrVec::push_back, ref(_handlerOwner), _1));
 		}
 	protected:
 
