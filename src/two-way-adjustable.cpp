@@ -61,14 +61,15 @@ int main(int argc, char * argv[]) {
 	TCLAP::ValueArg<int> worldX("x", "worldX", "index of world x axis from tracker", false, 0, "axis index 0-2");
 	TCLAP::ValueArg<int> worldZ("z", "worldZ", "index of world z axis from tracker", false, 1, "axis index 0-2");
 	TCLAP::SwitchArg recv("", "receive", "enable receiving messages from the robot", false);
+	TCLAP::SwitchArg verbose("", "verbose", "verbosely output what we send to the robot", false);
 
-	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ)(recv);
+	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ)(recv)(verbose);
 
 	app.parseAndBeginSetup(argc, argv);
 
 	std::string devName = outdevname.getValue();
 
-	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
+	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, verbose.getValue(), ScaleAndCastToIntTransform(gain.getValue()));
 
 	if (computeErr.getValue()) {
 		if (razerhydra.getValue()) {
@@ -95,7 +96,7 @@ int main(int argc, char * argv[]) {
 		app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()));
 		VERBOSE_DONE();
 	} else {
-		VERBOSE_START("Creating receive size echoer");
+		VERBOSE_START("Creating receive echoer");
 		app.addToMainloop(new ReceiveEchoer(app.getSerialPort(), true));
 		VERBOSE_DONE();
 	}
