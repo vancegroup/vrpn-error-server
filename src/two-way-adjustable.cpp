@@ -52,8 +52,8 @@ int main(int argc, char * argv[]) {
 
 	TCLAP::ValueArg<std::string> outdevname("", "devname", "base name of devices to create", false, "Robot", "device name");
 	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
-	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", false);
-	TCLAP::SwitchArg razerhydra("r", "razer", "create built-in Razer Hydra server", false);
+	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", true);
+	TCLAP::SwitchArg razerhydra("r", "razer", "create built-in Razer Hydra server", true);
 	TCLAP::ValueArg<std::string> trackerName("t", "trackername", "tracker device to access if computing error internally", false, "Tracker0@localhost", "VRPN device name");
 	TCLAP::ValueArg<int> actual("a", "actual", "channel number for the 'actual' tracking sensor", false, 0, "channel number");
 	TCLAP::ValueArg<int> desired("d", "desired", "channel number for the 'desired' tracking sensor", false, 1, "channel number");
