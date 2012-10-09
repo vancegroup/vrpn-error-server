@@ -53,7 +53,7 @@ struct CastToFloatWrapper : TransformFunctorBase {
 template < typename MessageCollection, typename MessageType, typename TransformFunctor = CastToFloatWrapper>
 class BinaryCommandOutput {
 	public:
-		typedef BinaryCommandOutput<MessageCollection, MessageType> type;
+		typedef BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor> type;
 		typedef MessageType message_type;
 		typedef MessageCollection message_collection;
 		typedef boost::mpl::size<MessageType> message_channels;
@@ -102,8 +102,8 @@ class BinaryCommandOutput {
 		void _changeHandler(const vrpn_ANALOGOUTPUTCB info);
 
 		double _interval;
-		vrpn_Analog_Output_Change_Handler _handler;
 		vrpn_SerialPort & _port;
+		vrpn_Analog_Output_Change_Handler _handler;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
 		TransformFunctor _transform;
