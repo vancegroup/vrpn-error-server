@@ -21,7 +21,7 @@
 #define INCLUDED_BinaryAnalogMessage_h_GUID_8fa5114b_939d_476b_b3b0_a1ff7fdc7f32
 
 // Internal Includes
-// - none
+#include "CopySequenceToArray.h"
 
 // Library/third-party includes
 #include <vrpn_Analog.h>
@@ -57,26 +57,7 @@ class CastToFloat64 {
 };
 
 
-template<typename Index, typename Sequence, typename Iter>
-inline void copySequenceToIterImpl(Sequence const& s,
-                                   Iter i,
-                                   typename boost::enable_if<boost::mpl::less<Index, typename boost::fusion::result_of::size<Sequence>::type> >::type * = NULL) {
-	*i = boost::fusion::at<Index>(s);
-	copySequenceToIterImpl<typename boost::mpl::plus<Index, boost::mpl::int_<1> >::type>(s, i + 1);
-}
 
-template<typename Index, typename Sequence, typename Iter>
-inline void copySequenceToIterImpl(Sequence const&,
-                                   Iter,
-                                   typename boost::disable_if<boost::mpl::less<Index, typename boost::fusion::result_of::size<Sequence>::type> >::type * = NULL) {
-}
-
-
-
-template<typename Sequence, typename Iter>
-inline void copySequenceToIter(Sequence const& s, Iter i) {
-	copySequenceToIterImpl<boost::mpl::int_<0> >(s, i);
-}
 
 template<typename MessageType, typename TransformFunctor = CastToFloat64>
 class BinaryAnalogMessage {
@@ -92,7 +73,7 @@ class BinaryAnalogMessage {
 
 		template<typename SequenceType>
 		void operator()(SequenceType const& s) {
-			copySequenceToIter(boost::fusion::transform(s, _f), _server->channels());
+			copySequenceToArray(boost::fusion::transform(s, _f), _server->channels());
 			_server->report();
 		}
 
