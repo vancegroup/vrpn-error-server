@@ -56,7 +56,7 @@ int main(int argc, char * argv[]) {
 	TCLAP::ValueArg<std::string> outdevname("d", "devname", "base name of devices to create", false, "Robot", "device name");
 	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
 	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", false);
-	TCLAP::SwitchArg hydra("h", "hydra", "create built-in Hydra server", false);
+	TCLAP::SwitchArg razerhydra("r", "razer", "create built-in Razer Hydra server", false);
 	TCLAP::ValueArg<std::string> trackerName("t", "trackername", "tracker device to access if computing error internally", false, "Tracker0@localhost", "VRPN device name");
 	TCLAP::ValueArg<int> actual("a", "actual", "channel number for the 'actual' tracking sensor", false, 0, "channel number");
 	TCLAP::ValueArg<int> desired("d", "desired", "channel number for the 'desired' tracking sensor", false, 1, "channel number");
@@ -72,7 +72,7 @@ int main(int argc, char * argv[]) {
 	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
 
 	if (computeErr.getValue()) {
-		if (hydra.getValue()) {
+		if (razerhydra.getValue()) {
 			app.addToMainloop(new vrpn_Tracker_RazerHydra("Tracker0", app.getConnection()));
 		}
 		vrpn_Tracker_Remote * tkr_remote = app.addToMainloop(new vrpn_Tracker_Remote(trackerName.getValue().c_str(), app.getConnection()));
