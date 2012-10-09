@@ -72,13 +72,22 @@ int main(int argc, char * argv[]) {
 
 	if (computeErr.getValue()) {
 		if (razerhydra.getValue()) {
+			VERBOSE_START("Creating Razer Hydra device server");
 			app.addToMainloop(new vrpn_Tracker_RazerHydra("Tracker0", app.getConnection()));
+			VERBOSE_DONE();
 		}
+
+		VERBOSE_START("Creating tracker remote: " << trackerName.getValue());
 		vrpn_Tracker_Remote * tkr_remote = app.addToMainloop(new vrpn_Tracker_Remote(trackerName.getValue().c_str(), app.getConnection()));
+		VERBOSE_DONE();
 
+		VERBOSE_START("Creating analog output remote: " << devName);
 		vrpn_Analog_Output_Remote * outRemote = app.addToMainloop(new vrpn_Analog_Output_Remote(devName.c_str(), app.getConnection()));
+		VERBOSE_DONE();
 
+		VERBOSE_START("Creating error computer, with actual on sensor " << actual.getValue() << ", desired on sensor " << desired.getValue());
 		app.addToMainloop(new ErrorComputer(tkr_remote, outRemote, actual.getValue(), desired.getValue(), worldX.getValue(), worldZ.getValue()));
+		VERBOSE_DONE();
 	}
 
 	if (recv.getValue()) {
