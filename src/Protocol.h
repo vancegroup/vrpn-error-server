@@ -49,6 +49,7 @@ namespace Protocol {
 
 	struct CurrentWheelSetpoints : MessageTypeBase< mpl::vector<int16_t, int16_t, int16_t, int16_t> > {};
 	struct CurrentWheelVelocities : MessageTypeBase< mpl::vector<int16_t, int16_t, int16_t, int16_t> > {};
+	struct CurrentPWMOutput : MessageTypeBase< mpl::vector<int16_t, int16_t, int16_t, int16_t> > {};
 
 	struct StartControl : MessageTypeBase< mpl::vector<> > {};
 	struct EndControl : MessageTypeBase< mpl::vector<> > {};
@@ -68,7 +69,7 @@ namespace Protocol {
 
 	typedef MessageCollection<mpl::vector<XYRotationIntVelocities, CurrentWheelSetpoints>, envelopes::Basic> BlueToGreen;
 	typedef MessageCollection<mpl::vector<CurrentWheelSetpoints, CurrentWheelVelocities>, envelopes::Basic> GreenToBlue;
-	typedef MessageCollection<mpl::vector<CurrentWheelSetpoints, CurrentWheelVelocities>, envelopes::BasicChecksum> RobotToComputer;
+	typedef MessageCollection<mpl::vector<CurrentWheelSetpoints, CurrentWheelVelocities, CurrentPWMOutput>, envelopes::BasicChecksum> RobotToComputer;
 } // end of namespace Protocol
 
 #endif // INCLUDED_Protocol_h_GUID_ae62d52d_aaac_4675_9296_d18b79f719fc
