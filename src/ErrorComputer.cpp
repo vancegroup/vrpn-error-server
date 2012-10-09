@@ -67,7 +67,7 @@ void ErrorComputer::mainloop() {
 	if (_gotGoal && _gotRobot) {
 		std::valarray<double> error = _positionGoal - _positionRobot;
 
-		ChannelArray desiredOutput = {error[_worldx], error[_worldz]};
+		ChannelArray desiredOutput = {{error[_worldx], error[_worldz]}};
 		if (desiredOutput != _lastOutput) {
 			//std::cout << "Requesting output " << desiredOutput[0] << ", " << desiredOutput[1] << std::endl;
 			_output->request_change_channels(CHANNELS, desiredOutput.data());
