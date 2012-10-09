@@ -77,25 +77,29 @@ class AppObject {
 		}
 
 		template<typename Collection, typename MessageType, typename TransformFunctor>
-		BinaryCommandOutput<Collection, MessageType> * addCustomBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+		BinaryCommandOutput<Collection, MessageType, TransformFunctor> * addCustomBinaryCommandOutput(std::string const & devName, bool showSendMessages = true, TransformFunctor const& func = TransformFunctor()) {
+			typedef BinaryCommandOutput<Collection, MessageType, TransformFunctor> ObjType;
 			VERBOSE_START("Creating custom transform binary command output server: " << devName);
-			BinaryCommandOutput<Collection, MessageType> * p = _container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
+			p->setTransform(func);
 			VERBOSE_DONE();
 			return p;
 		}
 
 		template<typename Collection, typename MessageType>
-		BinaryCommandOutput<Collection, MessageType> * addBinaryCommandOutput(std::string const & devName) {
+		BinaryCommandOutput<Collection, MessageType> * addBinaryCommandOutput(std::string const & devName, bool showSendMessages = true) {
+			typedef BinaryCommandOutput<Collection, MessageType> ObjType;
 			VERBOSE_START("Creating binary command output server: " << devName);
-			BinaryCommandOutput<Collection, MessageType> * p = _container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
 			VERBOSE_DONE();
 			return p;
 		}
 
 		template<int NumChannels, char CommandPrefix>
 		CommandOutput<NumChannels, CommandPrefix> * addCommandOutput(std::string const & devName) {
+			typedef CommandOutput<NumChannels, CommandPrefix> ObjType;
 			VERBOSE_START("Creating ASCII command output server: " << devName);
-			CommandOutput<NumChannels, CommandPrefix> * p = _container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval));
 			VERBOSE_DONE();
 			return p;
 		}
