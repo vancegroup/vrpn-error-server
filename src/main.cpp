@@ -38,7 +38,7 @@ int main(int argc, char * argv[]) {
 	bool externalSource;
 	bool useBinary;
 
-	AppObject app("Send appropriate error commands to a serial-connected controller");
+	AppObject app("Send floating-point error commands to a serial-connected controller");
 
 	TCLAP::ValueArg<std::string> outdevname("d", "devname", "vrpn_Analog_Output device to create", false, "ErrorCommand", "device name");
 	TCLAP::SwitchArg externalData("e", "external", "use external source of error rather than built-in tracker");
@@ -50,7 +50,6 @@ int main(int argc, char * argv[]) {
 
 	// Get the value parsed by each arg.
 	devName = outdevname.getValue();
-	externalSource = externalData.getValue();
 	useBinary = binaryData.getValue();
 
 	if (useBinary) {
@@ -63,7 +62,7 @@ int main(int argc, char * argv[]) {
 	app.addToMainloop(new ReceiveEchoer(app.getSerialPort()));
 	VERBOSE_DONE();
 
-	if (!externalSource) {
+	if (!externalData.getValue()) {
 		app.addToMainloop(new vrpn_Tracker_RazerHydra("Tracker0", app.getConnection()));
 
 		vrpn_Tracker_Remote * tkr_remote = app.addToMainloop(new vrpn_Tracker_Remote("Tracker0@localhost", app.getConnection()));
