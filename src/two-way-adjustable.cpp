@@ -22,6 +22,7 @@
 #include "Protocol.h"
 #include "ErrorComputer.h"
 #include "RobotDataReceiver.h"
+#include "ReceiveEchoer.h"
 
 // Library/third-party includes
 #include <tclap/CmdLine.h>
@@ -59,8 +60,9 @@ int main(int argc, char * argv[]) {
 	TCLAP::ValueArg<int> desired("d", "desired", "channel number for the 'desired' tracking sensor", false, 1, "channel number");
 	TCLAP::ValueArg<int> worldX("x", "worldX", "index of world x axis from tracker", false, 0, "axis index 0-2");
 	TCLAP::ValueArg<int> worldZ("z", "worldZ", "index of world z axis from tracker", false, 1, "axis index 0-2");
+	TCLAP::SwitchArg recv("", "receive", "enable receiving messages from the robot", false);
 
-	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ);
+	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ)(recv);
 
 	app.parseAndBeginSetup(argc, argv);
 
@@ -79,9 +81,15 @@ int main(int argc, char * argv[]) {
 		app.addToMainloop(new ErrorComputer(tkr_remote, outRemote, actual.getValue(), desired.getValue(), worldX.getValue(), worldZ.getValue()));
 	}
 
-	VERBOSE_START("Creating robot data receiver devices");
-	app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()));
-	VERBOSE_DONE();
+	if (recv.getValue()) {
+		VERBOSE_START("Creating robot data receiver devices");
+		app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()));
+		VERBOSE_DONE();
+	} else {
+		VERBOSE_START("Creating receive size echoer");
+		app.addToMainloop(new ReceiveEchoer(app.getSerialPort(), true));
+		VERBOSE_DONE();
+	}
 
 	VERBOSE_START("Sending 'StartControl' command");
 	transmission::transmitters::VrpnSerial tx(app.getSerialPort());

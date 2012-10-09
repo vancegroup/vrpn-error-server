@@ -34,8 +34,9 @@ class ReceiveEchoer {
 	public:
 
 		/// @brief Constructor
-		ReceiveEchoer(vrpn_SerialPort & port)
-			: _port(port) {
+		ReceiveEchoer(vrpn_SerialPort & port, bool showData = true)
+			: _port(port)
+			, _showData(showData) {
 		}
 
 		/// @brief Mainloop function: must be called frequently to allow VRPN to
@@ -43,7 +44,13 @@ class ReceiveEchoer {
 		void mainloop() {
 			std::string recv = _port.read_available_characters();
 			if (!recv.empty()) {
-				log() << "RECV: " << recv << std::endl;
+				log() << "RECV: ";
+				if (_showData) {
+					log() << recv;
+				} else {
+					log() << recv.size() << " bytes";
+				}
+				log() << std::endl;
 			}
 		}
 	private:
@@ -53,6 +60,7 @@ class ReceiveEchoer {
 		}
 
 		vrpn_SerialPort & _port;
+		bool _showData;
 };
 
 #endif // INCLUDED_ReceiveEchoer_h_GUID_cedd6f79_a060_4039_9adb_74da92d753fd
