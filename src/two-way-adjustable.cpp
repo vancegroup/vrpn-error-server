@@ -47,9 +47,6 @@ struct ScaleAndCastToIntTransform {
 };
 
 int main(int argc, char * argv[]) {
-	std::string devName;
-	std::string tracker;
-	bool externalSource;
 
 	AppObject app("Send appropriate integer velocity/error commands to a serial-connected controller, and serving status messages as a vrpn_Analog");
 
@@ -67,7 +64,7 @@ int main(int argc, char * argv[]) {
 
 	app.parseAndBeginSetup(argc, argv);
 
-	devName = outdevname.getValue();
+	std::string devName = outdevname.getValue();
 
 	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, false, ScaleAndCastToIntTransform(gain.getValue()));
 
