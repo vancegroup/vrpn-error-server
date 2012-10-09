@@ -34,9 +34,6 @@
 #include <iostream>
 
 int main(int argc, char * argv[]) {
-	std::string devName;
-	bool externalSource;
-	bool useBinary;
 
 	AppObject app("Send floating-point error commands to a serial-connected controller");
 
@@ -49,8 +46,8 @@ int main(int argc, char * argv[]) {
 	app.parseAndBeginSetup(argc, argv);
 
 	// Get the value parsed by each arg.
-	devName = outdevname.getValue();
-	useBinary = binaryData.getValue();
+	std::string devName = outdevname.getValue();
+	bool useBinary = binaryData.getValue();
 
 	if (useBinary) {
 		app.addBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError>(devName);
