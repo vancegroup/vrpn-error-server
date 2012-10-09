@@ -132,13 +132,18 @@ inline void BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor
 
 	_lastMessage = now;
 
-	if (_displayMessage) {
-		log() << "Send!" << std::endl;
-	}
+
 
 	/// Copy data into a boost array.
 	boost::array<vrpn_float64, message_channels::value> data;
 	std::copy(info.channel, info.channel + message_channels(), data.begin());
+	if (_displayMessage) {
+		log() << "Send: ";
+		for (int i = 0; i < message_channels(); ++i) {
+			log() << "\t" << _transform(info.channel[i]) << ",";
+		}
+		log() << std::endl;
+	}
 	transmission::send<MessageCollection, MessageType>(_tx, boost::fusion::transform(data, _transform));
 }
 
