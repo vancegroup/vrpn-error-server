@@ -64,8 +64,8 @@ class AppObject {
 		}
 
 		template<typename T>
-		void addToMainloop(T obj) {
-			_container.add(obj);
+		T addToMainloop(T obj) {
+			return _container.add(obj);
 		}
 
 		vrpn_Connection * getConnection() const {
@@ -77,24 +77,27 @@ class AppObject {
 		}
 
 		template<typename Collection, typename MessageType, typename TransformFunctor>
-		void addCustomBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+		BinaryCommandOutput<Collection, MessageType> * addCustomBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
 			VERBOSE_START("Creating custom transform binary command output server: " << devName);
-			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
+			BinaryCommandOutput<Collection, MessageType> * p = _container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
 			VERBOSE_DONE();
+			return p;
 		}
 
 		template<typename Collection, typename MessageType>
-		void addBinaryCommandOutput(std::string const & devName) {
+		BinaryCommandOutput<Collection, MessageType> * addBinaryCommandOutput(std::string const & devName) {
 			VERBOSE_START("Creating binary command output server: " << devName);
-			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
+			BinaryCommandOutput<Collection, MessageType> * p = _container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
 			VERBOSE_DONE();
+			return p;
 		}
 
 		template<int NumChannels, char CommandPrefix>
-		void addCommandOutput(std::string const & devName) {
+		CommandOutput<NumChannels, CommandPrefix> * addCommandOutput(std::string const & devName) {
 			VERBOSE_START("Creating ASCII command output server: " << devName);
-			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
+			CommandOutput<NumChannels, CommandPrefix> * p = _container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
 			VERBOSE_DONE();
+			return p;
 		}
 
 		void enterMainloop();
