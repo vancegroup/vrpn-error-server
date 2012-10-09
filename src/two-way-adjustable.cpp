@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
 	std::string tracker;
 	bool externalSource;
 
-	AppObject app("Send appropriate error commands to a serial-connected controller, and serving status messages as a vrpn_Analog");
+	AppObject app("Send appropriate integer velocity/error commands to a serial-connected controller, and serving status messages as a vrpn_Analog");
 
 	TCLAP::ValueArg<std::string> outdevname("d", "devname", "base name of devices to create", false, "Robot", "device name");
 	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
