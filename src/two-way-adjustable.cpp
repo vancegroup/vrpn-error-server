@@ -79,11 +79,11 @@ int main(int argc, char * argv[]) {
 		}
 
 		VERBOSE_START("Creating tracker remote: " << trackerName.getValue());
-		vrpn_Tracker_Remote * tkr_remote = app.addToMainloop(new vrpn_Tracker_Remote(trackerName.getValue().c_str(), app.getConnection()));
+		vrpn_Tracker_Remote * tkr_remote = app.createVRPNRemote<vrpn_Tracker_Remote>(trackerName.getValue());
 		VERBOSE_DONE();
 
 		VERBOSE_START("Creating analog output remote: " << devName);
-		vrpn_Analog_Output_Remote * outRemote = app.addToMainloop(new vrpn_Analog_Output_Remote(devName.c_str(), app.getConnection()));
+		vrpn_Analog_Output_Remote * outRemote = app.createVRPNRemote<vrpn_Analog_Output_Remote>(devName);
 		VERBOSE_DONE();
 
 		VERBOSE_START("Creating error computer, with actual on sensor " << actual.getValue() << ", desired on sensor " << desired.getValue());

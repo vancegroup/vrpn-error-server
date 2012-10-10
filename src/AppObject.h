@@ -28,11 +28,12 @@
 #include <tclap/CmdLine.h>
 #include <vrpn_MainloopContainer.h>
 #include <vrpn_SerialPort.h>
+#include <boost/scoped_array.hpp>
 
 // Standard includes
 #include <iostream>
 #include <string>
-
+#include <cstring>
 
 #define VERBOSE_START(X) std::cout << X << "..." << std::flush
 #define VERBOSE_MSG(X) std::cout << X << std::endl
@@ -74,6 +75,26 @@ class AppObject {
 
 		vrpn_SerialPort & getSerialPort() {
 			return _port;
+		}
+
+		template<typename VRPNRemoteType>
+		VRPNRemoteType * createVRPNRemote(std::string const& devName) {
+			using boost::scoped_array;
+			using boost::get_pointer;
+			vrpn_Connection * connToUse = NULL;
+			scoped_array<char> serviceLocation(vrpn_copy_service_location(devName.c_str()));
+
+			if (!serviceLocation
+			        || (devName.compare(serviceLocation.get()) == 0)
+			        || std::strncmp(serviceLocation.get(), "localhost", sizeof("localhost")) == 0) {
+				// No at sign, or other instance that indicates this is a local device
+				connToUse = getConnection();
+				VERBOSE_START("using local connection");
+			} else {
+				VERBOSE_START("not using local connection");
+			}
+			return addToMainloop(new VRPNRemoteType(devName.c_str(), connToUse));
+
 		}
 
 		template<typename Collection, typename MessageType, typename TransformFunctor>
