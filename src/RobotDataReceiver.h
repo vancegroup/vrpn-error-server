@@ -39,9 +39,10 @@ class RobotDataReceiver {
 
 		void mainloop();
 	private:
+		typedef FlexReceive::VRPNHandlerManager HandlerManagerType;
 		transmission::VrpnSerialReceiveAdapter _recvAdapter;
 		transmission::Receiver<Protocol::RobotToComputer> _recv;
-		boost::shared_ptr<FlexReceive::VRPNHandlerManager> _handler;
+		boost::shared_ptr<HandlerManagerType> _handler;
 };
 
 #endif // INCLUDED_RobotDataReceiver_h_GUID_dc50a193_9d2b_47b0_a1fe_8224495b27a3

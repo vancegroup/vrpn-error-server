@@ -21,7 +21,7 @@
 #define INCLUDED_VRPNHandlerManager_h_GUID_dfd1dce1_594b_443b_9135_aeff1312a424
 
 // Internal Includes
-#include "Manager.h"
+#include "HandlerManager.h"
 #include "Metafunctions.h"
 #include "MainloopContainerAddFunctor.h"
 

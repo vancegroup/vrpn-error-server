@@ -21,6 +21,7 @@
 #define INCLUDED_BinaryAnalogMessage_h_GUID_8fa5114b_939d_476b_b3b0_a1ff7fdc7f32
 
 // Internal Includes
+#include "FlexReceive/MessageHandlerBase.h"
 #include "CopySequenceToArray.h"
 
 // Library/third-party includes
@@ -60,9 +61,10 @@ class CastToFloat64 {
 
 
 template<typename MessageType, typename TransformFunctor = CastToFloat64>
-class BinaryAnalogMessage {
+class BinaryAnalogMessage : public FlexReceive::MessageHandlerBase {
 		typedef typename boost::mpl::size<MessageType>::type message_size;
 	public:
+		virtual ~BinaryAnalogMessage() {}
 		typedef boost::array<vrpn_float64, message_size::value> array_type;
 		typedef MessageType message_type;
 		BinaryAnalogMessage(const char * name, vrpn_Connection *c, TransformFunctor const& func = TransformFunctor())

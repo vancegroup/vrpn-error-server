@@ -7,9 +7,11 @@ set(LIB_SOURCES
 	vrpn_Callbacks/vrpn_Connection_Callbacks.h
 	vrpn_Callbacks/vrpn_Tracker_Callbacks.h
 
+	FlexReceive/HandlerManager.h
 	FlexReceive/Impl.h
 	FlexReceive/MainloopContainerAddFunctor.h
-	FlexReceive/Manager.h
+	FlexReceive/MessageHandlerBase.cpp
+	FlexReceive/MessageHandlerBase.h
 	FlexReceive/Metafunctions.h
 	FlexReceive/PushToPointerVecFunctor.h
 	FlexReceive/Registration.h

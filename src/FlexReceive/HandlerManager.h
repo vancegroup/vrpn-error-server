@@ -17,8 +17,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-#ifndef INCLUDED_Manager_h_GUID_aa190576_a439_4077_b64e_44e621eee586
-#define INCLUDED_Manager_h_GUID_aa190576_a439_4077_b64e_44e621eee586
+#ifndef INCLUDED_HandlerManager_h_GUID_aa190576_a439_4077_b64e_44e621eee586
+#define INCLUDED_HandlerManager_h_GUID_aa190576_a439_4077_b64e_44e621eee586
 
 // Internal Includes
 #include "Types.h"
@@ -38,11 +38,11 @@ namespace FlexReceive {
 		public:
 
 			template<typename MessageCollection>
-			typename detail::ComputeInitialRegProxy<MessageCollection, detail::PushToPtrVecFunctorType>::type
+			typename detail::ComputeInitialRegProxy<MessageCollection, detail::PushToPtrVecFunctor>::type
 			registerHandlerSet(transmission::Receiver<MessageCollection> & recv) {
 				prepareToRegisterHandlerSet(recv);
 				_handlerOwner.clear();
-				return registerHandlerSetImpl(recv, detail::createPushToPtrVecFunctor(_handlerOwner));
+				return registerHandlerSetImpl(recv, detail::PushToPtrVecFunctor(_handlerOwner));
 			}
 		protected:
 
@@ -74,4 +74,4 @@ namespace FlexReceive {
 	};
 } // end of namespace FlexReceive
 
-#endif // INCLUDED_Manager_h_GUID_aa190576_a439_4077_b64e_44e621eee586
+#endif // INCLUDED_HandlerManager_h_GUID_aa190576_a439_4077_b64e_44e621eee586

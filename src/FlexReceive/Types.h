@@ -30,10 +30,12 @@
 
 // Standard includes
 #include <vector>
+#include <map>
 
 namespace FlexReceive {
 	class HandlerManager;
 	class VRPNHandlerManager;
+	class MessageHandlerBase;
 
 	namespace Impl {
 		class ReceiveHandlerBase;
@@ -57,9 +59,10 @@ namespace FlexReceive {
 
 	namespace Types {
 		typedef boost::shared_ptr<Impl::ReceiveHandlerBase> FlexRecvBasePtr;
-		typedef boost::shared_ptr<void> GenericHandlerPtr;
+		typedef boost::shared_ptr<MessageHandlerBase> GenericHandlerPtr;
 		typedef std::vector<GenericHandlerPtr> GenericHandlerPtrVec;
-		typedef Loki::AssocVector<util::TypeId, void *> TypeHandlerMap;
+		//typedef Loki::AssocVector<util::TypeId, void *> TypeHandlerMap;
+		typedef std::map<util::TypeId, boost::any> TypeHandlerMap;
 	} // end of namespace Types
 } // end of namespace FlexReceive
 
