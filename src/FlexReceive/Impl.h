@@ -35,16 +35,27 @@
 
 namespace FlexReceive {
 	namespace Impl {
+		/// @brief Base class for ReceiveHandlerImpl allowing for shared_ptr
+		/// ownership of derived classes without requiring full type knowledge.
 		class ReceiveHandlerBase {
 			public:
 				virtual ~ReceiveHandlerBase() {}
 		};
 
+		/// @brief Templated receive handler, registered with the Receiver,
+		/// that uses its full type knowledge to extract and make use of
+		/// the individual message handlers stored generically in the
+		/// HandlerManager.
 		template<typename MessageHandlerMap>
 		class ReceiveHandlerImpl : public ReceiveHandlerBase {
 			public:
 				virtual ~ReceiveHandlerImpl() {}
 
+				/// @brief Function call operator for messages we have a handler for.
+				///
+				/// Using typeid on the message type, the handler is requested
+				/// from the HandlerManager. It is then extracted from its
+				/// generic container, and invoked on the received message.
 				template<typename M, typename Sequence>
 				void operator()(M const&,
 				                Sequence const& s,
