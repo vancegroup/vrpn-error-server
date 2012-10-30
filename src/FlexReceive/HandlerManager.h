@@ -62,7 +62,8 @@ namespace FlexReceive {
 				/// Must call prepareToRegisterHandlerSet then delete all old handlers before calling this!
 				/// Populate the registration data struct with references as needed.
 				typedef typename detail::ComputeRegData<MessageCollection, HandlerOwnerAdditionFunctor>::type RegDataType;
-				RegDataType data(_handlerMap, _implPtr, ownerAddition, recv);
+				typedef boost::shared_ptr<RegDataType> RegDataPtr;
+				RegDataPtr data(new RegDataType(_handlerMap, _implPtr, ownerAddition, recv));
 
 				/// Now, we are ready to get a new implementation.
 				return Registration::createInitialProxy(data);

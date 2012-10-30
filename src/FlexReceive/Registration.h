@@ -42,13 +42,13 @@ namespace FlexReceive {
 					, _ownHandler(ownHandler)
 					, _recv(&recv) {}
 
-				template<typename T, typename U>
-				void registerHandler(U handler) {
+				template<typename MessageType, typename HandlerType>
+				void registerHandler(MessageType const&, HandlerType handler) {
 					_ownHandler(handler);
-					_handlers->insert(std::make_pair(util::TypeId(typeid(T)), boost::any(handler)));
+					_handlers->insert(std::make_pair(util::TypeId(typeid(MessageType)), boost::any(handler)));
 				}
 				template<typename TypeMap>
-				void createAndRegisterImplementation() {
+				void createAndRegisterImplementation(TypeMap const &) {
 					typedef typename detail::ImplPtr<TypeMap>::type ImplPtrType;
 
 					/// Create new overall handler implementation managed by a specific shared_ptr
@@ -73,7 +73,7 @@ namespace FlexReceive {
 		class RegProxyFactory {
 			public:
 				template<typename TypeMap, typename RegistrationData>
-				static inline RegProxy<TypeMap, RegistrationData> create(RegistrationData & data) {
+				static inline RegProxy<TypeMap, RegistrationData> create(boost::shared_ptr<RegistrationData> data) {
 					return RegProxy<TypeMap, RegistrationData>(data);
 				}
 		};
@@ -81,13 +81,14 @@ namespace FlexReceive {
 		template<typename RegistrationData>
 		class RegProxyBase {
 			protected:
-				RegProxyBase(RegistrationData & data) : _isLast(true), _data(data) {}
+				typedef boost::shared_ptr<RegistrationData> DataPtr;
+				RegProxyBase(DataPtr data) : _isLast(true), _data(data) {}
 
 				template<typename TypeMap, typename Message, typename Handler, typename HandlerParam>
 				typename detail::ComputeNextRegProxy<TypeMap, Message, Handler, RegistrationData>::type
 				registerAndReturnNextProxy(HandlerParam h) {
 					/// Insert this handler into the map
-					_data.template registerHandler<Message>(h);
+					_data->registerHandler(Message(), h);
 
 					/// Indicate that we've been used to register a new handler,
 					/// so this object has only partial type knowledge.
@@ -100,11 +101,11 @@ namespace FlexReceive {
 
 				template<typename TypeMap>
 				void instantiateImplementationAndSetHandler() {
-					_data.template createAndRegisterImplementation<TypeMap>();
+					_data->createAndRegisterImplementation(TypeMap());
 				}
 
 				bool _isLast;
-				RegistrationData & _data;
+				DataPtr _data;
 		};
 
 		template<typename TypeMap, typename RegistrationData>
@@ -131,12 +132,12 @@ namespace FlexReceive {
 				}
 			private:
 				friend class RegProxyFactory;
-				RegProxy(RegistrationData & data) : RegProxyBase<RegistrationData>(data) {}
+				RegProxy(boost::shared_ptr<RegistrationData> data) : RegProxyBase<RegistrationData>(data) {}
 		};
 
 		template<typename RegistrationData>
-		inline RegProxy<detail::EmptyMPLMap, RegistrationData> createInitialProxy(RegistrationData & data) {
-			return RegProxyFactory::create < detail::EmptyMPLMap>(data);
+		inline RegProxy<detail::EmptyMPLMap, RegistrationData> createInitialProxy(boost::shared_ptr<RegistrationData> data) {
+			return RegProxyFactory::create < detail::EmptyMPLMap, RegistrationData>(data);
 		}
 
 	} // end of namespace Registration
