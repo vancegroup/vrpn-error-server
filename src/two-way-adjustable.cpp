@@ -54,6 +54,7 @@ int main(int argc, char * argv[]) {
 	TCLAP::ValueArg<std::string> outdevname("", "devname", "base name of devices to create", false, "Robot", "device name");
 	TCLAP::ValueArg<int> gain("g", "gain", "gain to apply to error before sending to robot", false, 5000, "Kp gain value");
 	TCLAP::SwitchArg computeErr("c", "computeerror", "internally compute error and send output", true);
+	TCLAP::SwitchArg useFloat("", "float", "use the float protocol with hard-coded Kp gain of 5000", false);
 	TCLAP::SwitchArg razerhydra("r", "razer", "create built-in Razer Hydra server", true);
 	TCLAP::ValueArg<std::string> trackerName("t", "trackername", "tracker device to access if computing error internally", false, "Tracker0@localhost", "VRPN device name");
 	TCLAP::ValueArg<int> actual("a", "actual", "channel number for the 'actual' tracking sensor", false, 0, "channel number");
@@ -63,13 +64,18 @@ int main(int argc, char * argv[]) {
 	TCLAP::SwitchArg recv("", "receive", "enable receiving messages from the robot", false);
 	TCLAP::SwitchArg verbose("", "verbose", "verbosely output what we send to the robot", false);
 
-	app.addArgs(outdevname)(gain)(computeErr)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ)(recv)(verbose);
+	app.addArgs(outdevname)(gain)(computeErr)(useFloat)(razerhydra)(trackerName)(actual)(desired)(worldX)(worldZ)(recv)(verbose);
 
 	app.parseAndBeginSetup(argc, argv);
 
 	std::string devName = outdevname.getValue();
 
-	app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, verbose.getValue(), ScaleAndCastToIntTransform(gain.getValue()));
+	if (useFloat.getValue()) {
+		app.addBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError>(devName, verbose.getValue());
+	} else {
+		app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, verbose.getValue(), ScaleAndCastToIntTransform(gain.getValue()));
+	}
+
 
 	if (computeErr.getValue()) {
 		if (razerhydra.getValue()) {
