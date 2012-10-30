@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
 
 	if (recv.getValue()) {
 		VERBOSE_START("Creating robot data receiver devices");
-		app.addToMainloop(new RobotDataReceiver(trackerName.getValue().c_str(), app.getConnection(), app.getSerialPort()));
+		app.addToMainloop(new RobotDataReceiver(devName.c_str(), app.getConnection(), app.getSerialPort()));
 		VERBOSE_DONE();
 	} else {
 		VERBOSE_START("Creating receive echoer");
