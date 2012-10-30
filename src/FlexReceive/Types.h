@@ -27,6 +27,7 @@
 #include <loki/AssocVector.h>
 #include <util/TypeId.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
 
 // Standard includes
 #include <vector>

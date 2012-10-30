@@ -50,9 +50,9 @@ namespace FlexReceive {
 				                Sequence const& s,
 				                typename M::message_type_tag * = NULL,
 				                typename boost::enable_if<boost::mpl::has_key<MessageHandlerMap, M> >::type * = NULL) {
-
+					using boost::any_cast;
 					typedef typename boost::mpl::at<MessageHandlerMap, M>::type HandlerType;
-					HandlerType * h = static_cast<HandlerType *>(_handlers[util::TypeId(typeid(M))]);
+					HandlerType * h = any_cast<HandlerType *>(_handlers[util::TypeId(typeid(M))]);
 					(*h)(s);
 				}
 
