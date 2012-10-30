@@ -38,11 +38,9 @@ namespace Protocol {
 	using namespace transmission;
 	namespace mpl = boost::mpl;
 	using boost::int16_t;
+
 	struct XYFloatError : MessageTypeBase< mpl::vector<float, float> > {};
 	struct XYRotationFloatError : MessageTypeBase< mpl::vector<float, float, float> > {};
-
-	struct XYIntError : MessageTypeBase< mpl::vector<int16_t, int16_t> > {};
-	struct XYIntFloatError : MessageTypeBase< mpl::vector<int16_t, int16_t, int16_t> > {};
 
 	struct XYIntVelocities : MessageTypeBase< mpl::vector<int16_t, int16_t> > {};
 	struct XYRotationIntVelocities : MessageTypeBase< mpl::vector<int16_t, int16_t, int16_t> > {};
@@ -58,8 +56,6 @@ namespace Protocol {
 	mpl::vector
 	< XYFloatError
 	, XYRotationFloatError
-	, XYIntError
-	, XYIntFloatError
 	, XYIntVelocities
 	, XYRotationIntVelocities
 	, StartControl
@@ -67,9 +63,30 @@ namespace Protocol {
 	> ,
 	envelopes::BasicChecksum > ComputerToRobot;
 
-	typedef MessageCollection<mpl::vector<XYRotationIntVelocities, CurrentWheelSetpoints>, envelopes::Basic> BlueToGreen;
-	typedef MessageCollection<mpl::vector<CurrentWheelSetpoints, CurrentWheelVelocities>, envelopes::Basic> GreenToBlue;
-	typedef MessageCollection<mpl::vector<CurrentWheelSetpoints, CurrentWheelVelocities, CurrentPWMOutput>, envelopes::BasicChecksum> RobotToComputer;
+
+	typedef MessageCollection <
+	mpl::vector
+	< XYRotationIntVelocities
+	, CurrentWheelSetpoints
+	> ,
+	envelopes::Basic > BlueToGreen;
+
+
+	typedef MessageCollection <
+	mpl::vector
+	<
+	CurrentWheelSetpoints,
+	CurrentWheelVelocities
+	> ,
+	envelopes::Basic > GreenToBlue;
+
+
+	typedef MessageCollection <
+	mpl::vector
+	< CurrentWheelSetpoints
+	, CurrentWheelVelocities
+	, CurrentPWMOutput
+	> , envelopes::BasicChecksum > RobotToComputer;
 } // end of namespace Protocol
 
 #endif // INCLUDED_Protocol_h_GUID_ae62d52d_aaac_4675_9296_d18b79f719fc
