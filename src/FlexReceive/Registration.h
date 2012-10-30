@@ -29,28 +29,45 @@
 // - none
 
 // Standard includes
-// - none
+#include <typeinfo>
 
 namespace FlexReceive {
 	namespace Registration {
-
 		template<typename ReceiverType, typename HandlerOwnerAdditionFunctor>
 		struct RegData {
-			RegData(Types::TypeHandlerMap & handlers, Types::FlexRecvBasePtr & ptr, HandlerOwnerAdditionFunctor ownHandler, ReceiverType & recv)
-				: _handlers(handlers)
-				, _ptr(ptr)
-				, _ownHandler(ownHandler)
-				, _recv(recv) {}
+			public:
+				RegData(Types::TypeHandlerMap & handlers, Types::FlexRecvBasePtr & ptr, HandlerOwnerAdditionFunctor ownHandler, ReceiverType & recv)
+					: _handlers(&handlers)
+					, _ptr(&ptr)
+					, _ownHandler(ownHandler)
+					, _recv(&recv) {}
 
-			template<typename T>
-			void insertHandlerInMap(void * handler) {
-				_handlers.insert(std::pair<util::TypeId, void *>(typeid(T), handler));
-			}
+				template<typename T, typename U>
+				void registerHandler(U handler) {
+					_ownHandler(handler);
+					_handlers->insert(std::make_pair(util::TypeId(typeid(T)), boost::any(handler)));
+				}
+				template<typename TypeMap>
+				void createAndRegisterImplementation() {
+					typedef typename detail::ImplPtr<TypeMap>::type ImplPtrType;
 
-			Types::TypeHandlerMap & _handlers;
-			Types::FlexRecvBasePtr & _ptr;
-			HandlerOwnerAdditionFunctor _ownHandler;
-			ReceiverType & _recv;
+					/// Create new overall handler implementation managed by a specific shared_ptr
+					ImplPtrType handlerImpl(Impl::ImplementationFactory::create<TypeMap>(*_handlers));
+
+					/// Register this overall handler with the receiver.
+					_recv->setHandler(*handlerImpl);
+
+					/// Change the handler manager's generic implementation pointer
+					/// to own the handler we just created, so its lifetime is managed.
+					*_ptr = handlerImpl;
+				}
+
+			private:
+
+				Types::TypeHandlerMap * _handlers;
+				Types::FlexRecvBasePtr * _ptr;
+				HandlerOwnerAdditionFunctor _ownHandler;
+				ReceiverType * _recv;
 		};
 
 		class RegProxyFactory {
@@ -69,11 +86,8 @@ namespace FlexReceive {
 				template<typename TypeMap, typename Message, typename Handler, typename HandlerParam>
 				typename detail::ComputeNextRegProxy<TypeMap, Message, Handler, RegistrationData>::type
 				registerAndReturnNextProxy(HandlerParam h) {
-					/// Transfer ownership of this handler to the handler manager
-					_data._ownHandler(h);
-
 					/// Insert this handler into the map
-					_data.template insertHandlerInMap<Message>(h);
+					_data.template registerHandler<Message>(h);
 
 					/// Indicate that we've been used to register a new handler,
 					/// so this object has only partial type knowledge.
@@ -86,21 +100,11 @@ namespace FlexReceive {
 
 				template<typename TypeMap>
 				void instantiateImplementationAndSetHandler() {
-					typedef typename detail::ImplPtr<TypeMap>::type PtrType;
-
-					/// Create new overall handler implementation managed by a specific shared_ptr
-					PtrType handlerImpl(Impl::ImplementationFactory::create<TypeMap>(_data._handlers));
-					/// Register this overall handler with the receiver.
-					_data._recv.setHandler(*handlerImpl);
-
-					/// Change the handler manager's generic implementation pointer
-					/// to own the handler we just created.
-					_data._ptr = handlerImpl;
+					_data.template createAndRegisterImplementation<TypeMap>();
 				}
 
 				bool _isLast;
 				RegistrationData & _data;
-
 		};
 
 		template<typename TypeMap, typename RegistrationData>
