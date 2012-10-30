@@ -7,3 +7,6 @@
 [submodule "loki-lib"]
 	path = loki-lib
 	url = https://github.com/rpavlik/loki-lib.git
+[submodule "NexusRobotProtocol"]
+	path = NexusRobotProtocol
+	url = https://github.com/vancegroup/NexusRobotProtocol.git
