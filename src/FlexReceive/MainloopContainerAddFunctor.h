@@ -33,14 +33,14 @@ namespace FlexReceive {
 	namespace detail {
 		class MainloopContainerAddFunctor {
 			public:
-				MainloopContainerAddFunctor(vrpn_MainloopContainer & container) : _container(container) {}
+				MainloopContainerAddFunctor(vrpn_MainloopContainer & container) : _container(&container) {}
 
 				template<typename T>
 				T operator()(T o) {
-					return _container.add(o);
+					return _container->add(o);
 				}
 			private:
-				vrpn_MainloopContainer & _container;
+				vrpn_MainloopContainer * _container;
 		};
 
 	} // end of namespace detail
