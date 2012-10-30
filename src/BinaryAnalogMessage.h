@@ -37,7 +37,8 @@
 #include <boost/utility/enable_if.hpp>
 
 // Standard includes
-// - none
+#include <iostream>
+#include <string>
 
 class CastToFloat64 {
 	public:
@@ -69,12 +70,15 @@ class BinaryAnalogMessage : public FlexReceive::MessageHandlerBase {
 		typedef MessageType message_type;
 		BinaryAnalogMessage(const char * name, vrpn_Connection *c, TransformFunctor const& func = TransformFunctor())
 			: _f(func)
-			, _server(new vrpn_Analog_Server(name, c, message_size())) {
+			, _server(new vrpn_Analog_Server(name, c, message_size()))
+			, _name(name) {
 			_server->setNumChannels(message_size());
 		}
 
 		template<typename SequenceType>
 		void operator()(SequenceType const& s) {
+			std::cout << _name << ": Got sequence data to report" << std::endl;
+
 			copySequenceToArray(boost::fusion::transform(s, _f), _server->channels());
 			_server->report();
 		}
@@ -86,6 +90,7 @@ class BinaryAnalogMessage : public FlexReceive::MessageHandlerBase {
 	private:
 		TransformFunctor _f;
 		boost::scoped_ptr<vrpn_Analog_Server> _server;
+		std::string _name;
 
 };
 
