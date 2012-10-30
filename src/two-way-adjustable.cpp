@@ -35,13 +35,13 @@
 #include <string>
 #include <iostream>
 
-struct ScaleAndCastToIntTransform {
-	ScaleAndCastToIntTransform() : Kp(1) {}
-	ScaleAndCastToIntTransform(vrpn_float64 gain) : Kp(gain) {}
+struct ScaleAndRoundTransform {
+	ScaleAndRoundTransform() : Kp(1) {}
+	ScaleAndRoundTransform(vrpn_float64 gain) : Kp(gain) {}
 	typedef stdint::int16_t result_type;
 	template<typename T>
 	stdint::int16_t operator()(T input) const {
-		return static_cast<stdint::int16_t>(input * Kp);
+		return static_cast<stdint::int16_t>(input * Kp + 0.5);
 	}
 
 	vrpn_float64 Kp;
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]) {
 	if (useFloat.getValue()) {
 		app.addBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYFloatError>(devName, verbose.getValue());
 	} else {
-		app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, verbose.getValue(), ScaleAndCastToIntTransform(gain.getValue()));
+		app.addCustomBinaryCommandOutput<Protocol::ComputerToRobot, Protocol::XYIntVelocities>(devName, verbose.getValue(), ScaleAndRoundTransform(gain.getValue()));
 	}
 
 
