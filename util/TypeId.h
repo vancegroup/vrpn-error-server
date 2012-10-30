@@ -9,9 +9,9 @@
 	This GUID can help identify the project: d1dbc94e-e863-49cf-bc08-ab4d9f486613
 
 	This copy of the header is from the revision that Git calls
-	9c1b82e692c105dbb93dd092d312377180f8f8ba
+	4659208a2b3a694a2bf0bac5051cde4c64a4c0ee
 
-	Commit date: "2012-10-10 18:26:03 -0500"
+	Commit date: "2012-10-30 12:23:38 -0500"
 
 	@author
 	Ryan Pavlik
@@ -80,22 +80,12 @@ namespace util {
 				is always false, and a.before(b) implies !(b.before(a))
 				and a != b
 
-				Furthermore, an "empty" info is never before anything.
 			*/
 			bool before(std::type_info const& other) const {
-				if (empty()) {
-					return false;
-				}
 				return get().before(other);
 			}
 
 			bool before(TypeId const& other) const {
-				if (empty()) {
-					return false;
-				}
-				if (other.empty()) {
-					return true;
-				}
 				return get().before(other.get());
 			}
 
