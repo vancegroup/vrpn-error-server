@@ -66,7 +66,7 @@ namespace FlexReceive {
 				RegDataPtr data(new RegDataType(_handlerMap, _implPtr, ownerAddition, recv));
 
 				/// Now, we are ready to get a new implementation.
-				return Registration::createInitialProxy(data);
+				return Registration::RegProxyFactory::createInitialProxy(data);
 			}
 		private:
 			FlexReceive::Types::TypeHandlerMap _handlerMap;

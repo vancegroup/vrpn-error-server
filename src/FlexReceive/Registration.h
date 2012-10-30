@@ -33,6 +33,15 @@
 
 namespace FlexReceive {
 	namespace Registration {
+		/// @brief A class containing data/references that are shared by
+		/// all registration proxies.
+		///
+		/// An instance is dynamically allocated by the HandlerManager automatically,
+		/// and with lifetime managed by a smart pointer, is passed along chained
+		/// registration calls.
+		///
+		/// Only needed to be used by RegProxyBase, RegProxy, and HandlerManager -
+		/// not for "end-user" use.
 		template<typename ReceiverType, typename HandlerOwnerAdditionFunctor>
 		struct RegData {
 			public:
@@ -71,8 +80,16 @@ namespace FlexReceive {
 				ReceiverType & _recv;
 		};
 
+		/// @brief Class used to control constructor access by different
+		/// template specializations of RegProxy, and by HandlerManagers.
 		class RegProxyFactory {
 			public:
+				template<typename RegistrationData>
+				static inline RegProxy<detail::EmptyMPLMap, RegistrationData> createInitialProxy(boost::shared_ptr<RegistrationData> data) {
+					return RegProxyFactory::create < detail::EmptyMPLMap, RegistrationData>(data);
+				}
+			private:
+				template<typename> friend class RegProxyBase;
 				template<typename TypeMap, typename RegistrationData>
 				static inline RegProxy<TypeMap, RegistrationData> create(boost::shared_ptr<RegistrationData> data) {
 					return RegProxy<TypeMap, RegistrationData>(data);
@@ -83,8 +100,15 @@ namespace FlexReceive {
 		class RegProxyBase {
 			protected:
 				typedef boost::shared_ptr<RegistrationData> DataPtr;
+
+				/// @brief Constructor taking a smart pointer to the persistent
+				/// proxy data.
 				RegProxyBase(DataPtr data) : _isLast(true), _data(data) {}
 
+				/// @brief Function called in "return" of derived classes
+				/// that performs the message type handler registration
+				/// and returns a new registration proxy with the additional
+				/// type knowledge.
 				template<typename TypeMap, typename Message, typename Handler, typename HandlerParam>
 				typename detail::ComputeNextRegProxy<TypeMap, Message, Handler, RegistrationData>::type
 				registerAndReturnNextProxy(HandlerParam h) {
@@ -100,11 +124,25 @@ namespace FlexReceive {
 					return RegProxyFactory::create<NextMapType>(_data);
 				}
 
+				/// @brief This templated method must be called from derived
+				/// class destructors, passing the TypeMap template argument.
+				///
+				/// This allows the base class to check if this is the last
+				/// proxy in a "string" of chained proxy calls, and if so,
+				/// use that complete type knowledge to generate a full
+				/// message handler implementation.
 				template<typename TypeMap>
-				void instantiateImplementationAndSetHandler() {
-					_data->createAndRegisterImplementation(TypeMap());
-				}
+				void derivedDisposalAction() {
+					if (_isLast) {
 
+						/// We are the return value from the last proxy call,
+						/// and were unused (didn't get called) - so we have
+						/// accumulated full type knowledge. Use it, before we
+						/// lose it.
+						_data->createAndRegisterImplementation(TypeMap());
+					}
+				}
+			private:
 				bool _isLast;
 				DataPtr _data;
 		};
@@ -123,23 +161,14 @@ namespace FlexReceive {
 				}
 
 				~RegProxy() {
-					if (base::_isLast) {
-						/// We are the return value from the last proxy call,
-						/// and were unused (didn't get called) - so we have
-						/// accumulated full type knowledge. Use it, before we
-						/// lose it.
-						base::template instantiateImplementationAndSetHandler<TypeMap>();
-					}
+					base::template derivedDisposalAction<TypeMap>();
 				}
 			private:
 				friend class RegProxyFactory;
 				RegProxy(boost::shared_ptr<RegistrationData> data) : RegProxyBase<RegistrationData>(data) {}
 		};
 
-		template<typename RegistrationData>
-		inline RegProxy<detail::EmptyMPLMap, RegistrationData> createInitialProxy(boost::shared_ptr<RegistrationData> data) {
-			return RegProxyFactory::create < detail::EmptyMPLMap, RegistrationData>(data);
-		}
+
 
 	} // end of namespace Registration
 } // end of namespace FlexReceive
