@@ -78,7 +78,8 @@ class AppObject {
 		}
 
 		template<typename VRPNRemoteType>
-		VRPNRemoteType * createVRPNRemote(std::string const& devName) {
+		VRPNRemoteType *
+		createVRPNRemote(std::string const& devName) {
 			using boost::scoped_array;
 			using boost::get_pointer;
 			vrpn_Connection * connToUse = NULL;
@@ -98,7 +99,8 @@ class AppObject {
 		}
 
 		template<typename Collection, typename MessageType, typename TransformFunctor>
-		BinaryCommandOutput<Collection, MessageType, TransformFunctor> * addCustomBinaryCommandOutput(std::string const & devName, bool showSendMessages = true, TransformFunctor const& func = TransformFunctor()) {
+		BinaryCommandOutput<Collection, MessageType, TransformFunctor> *
+		addCustomBinaryCommandOutput(std::string const & devName, bool showSendMessages = true, TransformFunctor const& func = TransformFunctor()) {
 			typedef BinaryCommandOutput<Collection, MessageType, TransformFunctor> ObjType;
 			VERBOSE_START("Creating custom transform binary command output server: " << devName);
 			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
@@ -108,7 +110,8 @@ class AppObject {
 		}
 
 		template<typename Collection, typename MessageType>
-		BinaryCommandOutput<Collection, MessageType> * addBinaryCommandOutput(std::string const & devName, bool showSendMessages = true) {
+		BinaryCommandOutput<Collection, MessageType> *
+		addBinaryCommandOutput(std::string const & devName, bool showSendMessages = true) {
 			typedef BinaryCommandOutput<Collection, MessageType> ObjType;
 			VERBOSE_START("Creating binary command output server: " << devName);
 			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
@@ -117,7 +120,8 @@ class AppObject {
 		}
 
 		template<int NumChannels, char CommandPrefix>
-		CommandOutput<NumChannels, CommandPrefix> * addCommandOutput(std::string const & devName) {
+		CommandOutput<NumChannels, CommandPrefix> *
+		addCommandOutput(std::string const & devName) {
 			typedef CommandOutput<NumChannels, CommandPrefix> ObjType;
 			VERBOSE_START("Creating ASCII command output server: " << devName);
 			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval));
