@@ -34,15 +34,15 @@ namespace FlexReceive {
 	namespace detail {
 		class PushToPtrVecFunctor {
 			public:
-				PushToPtrVecFunctor(Types::GenericHandlerPtrVec & handlerOwner) : _handlerOwner(&handlerOwner) {}
+				PushToPtrVecFunctor(Types::GenericHandlerPtrVec & handlerOwner) : _handlerOwner(handlerOwner) {}
 
 				template<typename T>
 				void operator()(T * handler) {
 					boost::shared_ptr<T> p(handler);
-					_handlerOwner->push_back(p);
+					_handlerOwner.push_back(p);
 				}
 			private:
-				Types::GenericHandlerPtrVec * _handlerOwner;
+				Types::GenericHandlerPtrVec & _handlerOwner;
 		};
 	} // end of namespace detail
 } // end of namespace FlexReceive

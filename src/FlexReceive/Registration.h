@@ -37,37 +37,38 @@ namespace FlexReceive {
 		struct RegData {
 			public:
 				RegData(Types::TypeHandlerMap & handlers, Types::FlexRecvBasePtr & ptr, HandlerOwnerAdditionFunctor ownHandler, ReceiverType & recv)
-					: _handlers(&handlers)
-					, _ptr(&ptr)
+					: _handlers(handlers)
+					, _ptr(ptr)
 					, _ownHandler(ownHandler)
-					, _recv(&recv) {}
+					, _recv(recv) {}
 
 				template<typename MessageType, typename HandlerType>
 				void registerHandler(MessageType const&, HandlerType handler) {
 					_ownHandler(handler);
-					_handlers->insert(std::make_pair(util::TypeId(typeid(MessageType)), boost::any(handler)));
+					_handlers.insert(std::make_pair(util::TypeId(typeid(MessageType)), boost::any(handler)));
 				}
+
 				template<typename TypeMap>
 				void createAndRegisterImplementation(TypeMap const &) {
 					typedef typename detail::ImplPtr<TypeMap>::type ImplPtrType;
 
 					/// Create new overall handler implementation managed by a specific shared_ptr
-					ImplPtrType handlerImpl(Impl::ImplementationFactory::create<TypeMap>(*_handlers));
+					ImplPtrType handlerImpl(Impl::ImplementationFactory::create<TypeMap>(_handlers));
 
 					/// Register this overall handler with the receiver.
-					_recv->setHandler(*handlerImpl);
+					_recv.setHandler(*handlerImpl);
 
 					/// Change the handler manager's generic implementation pointer
 					/// to own the handler we just created, so its lifetime is managed.
-					*_ptr = handlerImpl;
+					_ptr = handlerImpl;
 				}
 
 			private:
 
-				Types::TypeHandlerMap * _handlers;
-				Types::FlexRecvBasePtr * _ptr;
+				Types::TypeHandlerMap & _handlers;
+				Types::FlexRecvBasePtr & _ptr;
 				HandlerOwnerAdditionFunctor _ownHandler;
-				ReceiverType * _recv;
+				ReceiverType & _recv;
 		};
 
 		class RegProxyFactory {
