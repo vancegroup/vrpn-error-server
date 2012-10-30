@@ -18,8 +18,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
+#include <NexusRobotProtocol.h>
 #include "AppObject.h"
-#include "Protocol.h"
 #include "ErrorComputer.h"
 #include "ReceiveEchoer.h"
 

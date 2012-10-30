@@ -20,7 +20,7 @@
 // Internal Includes
 #include "RobotDataReceiver.h"
 #include "BinaryAnalogMessage.h"
-#include "Protocol.h"
+#include <NexusRobotProtocol.h>
 #include "FlexReceive/HandlerManager.h"
 #include "FlexReceive/VRPNHandlerManager.h"
 

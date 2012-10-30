@@ -1,5 +1,11 @@
 
-include_directories(${Boost_INCLUDE_DIR} ${VRPN_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS} ${TUPLE_TRANSMISSION_INCLUDE_DIRS} ${LOKILIB_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/..")
+include_directories(${Boost_INCLUDE_DIR}
+	${VRPN_INCLUDE_DIRS}
+	${TCLAP_INCLUDE_DIRS}
+	${TUPLE_TRANSMISSION_INCLUDE_DIRS}
+	${LOKILIB_INCLUDE_DIRS}
+	${PROTOCOL_INCLUDE_DIRS}
+	"${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 set(LIB_SOURCES
 	vrpn_Callbacks/vrpn_Analog_Output_Callbacks.h
@@ -27,11 +33,11 @@ set(LIB_SOURCES
 	CommandOutput.h
 	ErrorComputer.cpp
 	ErrorComputer.h
-	Protocol.h
 	ReceiveEchoer.h
 	RobotDataReceiver.cpp
 	RobotDataReceiver.h
 	vrpn_SemaphoreGuard.h)
+
 add_library(server-common STATIC ${LIB_SOURCES})
 target_link_libraries(server-common ${VRPN_LIBRARIES})
 

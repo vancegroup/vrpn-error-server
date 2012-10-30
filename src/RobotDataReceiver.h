@@ -21,7 +21,7 @@
 #define INCLUDED_RobotDataReceiver_h_GUID_dc50a193_9d2b_47b0_a1fe_8224495b27a3
 
 // Internal Includes
-#include "Protocol.h"
+#include <NexusRobotProtocol.h>
 #include "FlexReceive/Types.h"
 
 // Library/third-party includes

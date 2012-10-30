@@ -19,7 +19,7 @@
 
 // Internal Includes
 #include "AppObject.h"
-#include "Protocol.h"
+#include <NexusRobotProtocol.h>
 #include "ErrorComputer.h"
 #include "RobotDataReceiver.h"
 #include "ReceiveEchoer.h"
