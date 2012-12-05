@@ -44,7 +44,7 @@ target_link_libraries(server-common ${VRPN_LIBRARIES})
 add_executable(error_server main.cpp)
 target_link_libraries(error_server server-common)
 
-install(TARGET error_server
+install(TARGETS error_server
 	RUNTIME DESTINATION bin)
 
 if(MSVC)
@@ -52,6 +52,6 @@ if(MSVC)
 else()
 	add_executable(two_way_adjustable_server two-way-adjustable.cpp)
 	target_link_libraries(two_way_adjustable_server server-common)
-	install(TARGET two_way_adjustable_server
+	install(TARGETS two_way_adjustable_server
 		RUNTIME DESTINATION bin)
 endif()
