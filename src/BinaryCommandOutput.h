@@ -53,7 +53,7 @@ struct CastToFloatWrapper : TransformFunctorBase {
 template < typename MessageCollection, typename MessageType, typename TransformFunctor = CastToFloatWrapper>
 class BinaryCommandOutput {
 	public:
-		typedef BinaryCommandOutput<MessageCollection, MessageType> type;
+		typedef BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor> type;
 		typedef MessageType message_type;
 		typedef MessageCollection message_collection;
 		typedef boost::mpl::size<MessageType> message_channels;
@@ -102,8 +102,8 @@ class BinaryCommandOutput {
 		void _changeHandler(const vrpn_ANALOGOUTPUTCB info);
 
 		double _interval;
-		vrpn_Analog_Output_Change_Handler _handler;
 		vrpn_SerialPort & _port;
+		vrpn_Analog_Output_Change_Handler _handler;
 		boost::scoped_ptr<vrpn_Analog_Output_Callback_Server> _out_server;
 
 		TransformFunctor _transform;
@@ -132,13 +132,18 @@ inline void BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor
 
 	_lastMessage = now;
 
-	if (_displayMessage) {
-		log() << "Send!" << std::endl;
-	}
+
 
 	/// Copy data into a boost array.
 	boost::array<vrpn_float64, message_channels::value> data;
 	std::copy(info.channel, info.channel + message_channels(), data.begin());
+	if (_displayMessage) {
+		log() << "Send: ";
+		for (int i = 0; i < message_channels(); ++i) {
+			log() << "\t" << _transform(info.channel[i]) << ",";
+		}
+		log() << std::endl;
+	}
 	transmission::send<MessageCollection, MessageType>(_tx, boost::fusion::transform(data, _transform));
 }
 

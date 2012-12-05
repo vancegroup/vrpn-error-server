@@ -28,11 +28,12 @@
 #include <tclap/CmdLine.h>
 #include <vrpn_MainloopContainer.h>
 #include <vrpn_SerialPort.h>
+#include <boost/scoped_array.hpp>
 
 // Standard includes
 #include <iostream>
 #include <string>
-
+#include <cstring>
 
 #define VERBOSE_START(X) std::cout << X << "..." << std::flush
 #define VERBOSE_MSG(X) std::cout << X << std::endl
@@ -64,8 +65,8 @@ class AppObject {
 		}
 
 		template<typename T>
-		void addToMainloop(T obj) {
-			_container.add(obj);
+		T addToMainloop(T obj) {
+			return _container.add(obj);
 		}
 
 		vrpn_Connection * getConnection() const {
@@ -76,25 +77,56 @@ class AppObject {
 			return _port;
 		}
 
+		template<typename VRPNRemoteType>
+		VRPNRemoteType *
+		createVRPNRemote(std::string const& devName) {
+			using boost::scoped_array;
+			using boost::get_pointer;
+			vrpn_Connection * connToUse = NULL;
+			scoped_array<char> serviceLocation(vrpn_copy_service_location(devName.c_str()));
+
+			if (!serviceLocation
+			        || (devName.compare(serviceLocation.get()) == 0)
+			        || std::strncmp(serviceLocation.get(), "localhost", sizeof("localhost")) == 0) {
+				// No at sign, or other instance that indicates this is a local device
+				connToUse = getConnection();
+				VERBOSE_START("using local connection");
+			} else {
+				VERBOSE_START("not using local connection");
+			}
+			return addToMainloop(new VRPNRemoteType(devName.c_str(), connToUse));
+
+		}
+
 		template<typename Collection, typename MessageType, typename TransformFunctor>
-		void addCustomBinaryCommandOutput(std::string const & devName, TransformFunctor const& func = TransformFunctor()) {
+		BinaryCommandOutput<Collection, MessageType, TransformFunctor> *
+		addCustomBinaryCommandOutput(std::string const & devName, bool showSendMessages = true, TransformFunctor const& func = TransformFunctor()) {
+			typedef BinaryCommandOutput<Collection, MessageType, TransformFunctor> ObjType;
 			VERBOSE_START("Creating custom transform binary command output server: " << devName);
-			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval, func));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
+			p->setTransform(func);
 			VERBOSE_DONE();
+			return p;
 		}
 
 		template<typename Collection, typename MessageType>
-		void addBinaryCommandOutput(std::string const & devName) {
+		BinaryCommandOutput<Collection, MessageType> *
+		addBinaryCommandOutput(std::string const & devName, bool showSendMessages = true) {
+			typedef BinaryCommandOutput<Collection, MessageType> ObjType;
 			VERBOSE_START("Creating binary command output server: " << devName);
-			_container.add(new BinaryCommandOutput<Collection, MessageType>(devName.c_str(), _port, _c, _interval));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval, showSendMessages));
 			VERBOSE_DONE();
+			return p;
 		}
 
 		template<int NumChannels, char CommandPrefix>
-		void addCommandOutput(std::string const & devName) {
+		CommandOutput<NumChannels, CommandPrefix> *
+		addCommandOutput(std::string const & devName) {
+			typedef CommandOutput<NumChannels, CommandPrefix> ObjType;
 			VERBOSE_START("Creating ASCII command output server: " << devName);
-			_container.add(new CommandOutput<NumChannels, CommandPrefix>(devName.c_str(), _port, _c, _interval));
+			ObjType * p = _container.add(new ObjType(devName.c_str(), _port, _c, _interval));
 			VERBOSE_DONE();
+			return p;
 		}
 
 		void enterMainloop();

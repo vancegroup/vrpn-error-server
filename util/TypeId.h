@@ -9,9 +9,9 @@
 	This GUID can help identify the project: d1dbc94e-e863-49cf-bc08-ab4d9f486613
 
 	This copy of the header is from the revision that Git calls
-	c6c97c37378c23b7ccc5740dd10d8728cd35e1b0
+	4659208a2b3a694a2bf0bac5051cde4c64a4c0ee
 
-	Commit date: "2012-10-08 16:00:22 -0500"
+	Commit date: "2012-10-30 12:23:38 -0500"
 
 	@author
 	Ryan Pavlik
@@ -34,35 +34,53 @@
 // - none
 
 // Library/third-party includes
-#include <boost/mpl/void.hpp>
 #include <boost/mpl/identity.hpp>
+#include <boost/operators.hpp>
 
 // Standard includes
 #include <typeinfo>
 
 namespace util {
 	/// @brief A simple wrapper/handle class for type_info for use in containers, etc.
-	class TypeId {
+	class TypeId : public boost::totally_ordered<TypeId, boost::totally_ordered<TypeId, std::type_info> > {
+		private:
+			/// @brief Dummy empty type, used to indicate an empty typeid.
+			class NullType {};
 		public:
-			/// @brief default constructor - initializes to typeinfo of boost::mpl::void_
-			TypeId() : _typeinfo(&null_type()) {}
+			/// @brief default constructor - constructs an "empty" typeid.
+			TypeId() : _typeinfo(null_type_ptr()) {}
 
 			/// @brief constructor from type_info reference (return type of typeid operator)
 			TypeId(std::type_info const & ti) : _typeinfo(&ti) {}
-
-			/// @brief Templated constructor
-			template<typename T>
-			TypeId() : _typeinfo(&typeid(T)) {}
 
 			/// @brief Templated constructor using boost::mpl::identity as a wrapper.
 			template<typename T>
 			TypeId(boost::mpl::identity<T> const&) : _typeinfo(&typeid(T)) {}
 
-			/// @brief Some name, with no guarantee of uniqueness or usefulness.
-			const char * name() const {
-				return get().name();
+			/// @brief templated static factory method - easier than nesting a typeid call.
+			template<typename T>
+			static TypeId create() {
+				return TypeId(typeid(T));
 			}
 
+			/// @brief Some name, with no guarantee of uniqueness or usefulness.
+			const char * name() const {
+				if (empty()) {
+					return "";
+				} else {
+					return get().name();
+				}
+			}
+
+			/** @brief Ordering method, based on std::type_info's before ordering method.
+
+				Used by the nonmember operator<()
+
+				Arbitrary, except that for non-empty a and b,a.before(a)
+				is always false, and a.before(b) implies !(b.before(a))
+				and a != b
+
+			*/
 			bool before(std::type_info const& other) const {
 				return get().before(other);
 			}
@@ -75,12 +93,16 @@ namespace util {
 				return *_typeinfo;
 			}
 
-			bool empty() const {
-				return get() == null_type();
+			std::type_info const * getPointer() const {
+				return _typeinfo;
 			}
 
-			static std::type_info const & null_type() {
-				return typeid(boost::mpl::void_);
+			bool empty() const {
+				return getPointer() == null_type_ptr();
+			}
+
+			static std::type_info const * null_type_ptr() {
+				return &typeid(NullType);
 			}
 		private:
 
@@ -88,31 +110,30 @@ namespace util {
 
 	};
 
-	bool operator<(TypeId const& lhs, TypeId const& rhs) {
+	inline bool operator<(TypeId const& lhs, TypeId const& rhs) {
 		return lhs.before(rhs);
 	}
 
-	bool operator==(TypeId const& lhs, TypeId const& rhs) {
+	inline bool operator<(TypeId const& lhs, std::type_info const& rhs) {
+		return lhs.before(rhs);
+	}
+
+	inline bool operator>(std::type_info const& lhs, TypeId const& rhs) {
+		return rhs.before(lhs);
+	}
+
+	inline bool operator==(TypeId const& lhs, TypeId const& rhs) {
 		return lhs.get() == rhs.get();
 	}
 
-	bool operator!=(TypeId const& lhs, TypeId const& rhs) {
-		return lhs.get() != rhs.get();
-	}
-
-	bool operator==(std::type_info const& lhs, TypeId const& rhs) {
-		return lhs == rhs.get();
-	}
-
-	bool operator!=(std::type_info const& lhs, TypeId const& rhs) {
-		return lhs != rhs.get();
-	}
-	bool operator==(TypeId const& lhs, std::type_info const& rhs) {
+	inline bool operator==(TypeId const& lhs, std::type_info const& rhs) {
 		return lhs.get() == rhs;
 	}
 
-	bool operator!=(TypeId const& lhs, std::type_info const& rhs) {
-		return lhs.get() != rhs;
+	template<typename StreamType>
+	StreamType & operator<<(StreamType & s, TypeId const& rhs) {
+		s << "[TypeId: " << rhs.name() << "]";
+		return s;
 	}
 } // end of namespace util
 

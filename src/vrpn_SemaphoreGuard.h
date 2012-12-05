@@ -93,7 +93,6 @@ class vrpn_SemaphoreGuard {
 		}
 	private:
 		vrpn_Semaphore & _sem;
-		bool _block;
 		bool _acquired;
 
 };
