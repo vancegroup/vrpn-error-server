@@ -73,11 +73,12 @@ class BinaryAnalogMessage : public FlexReceive::MessageHandlerBase {
 			, _server(new vrpn_Analog_Server(name, c, message_size()))
 			, _name(name) {
 			_server->setNumChannels(message_size());
+			std::cout << "Created analog device " << _name << std::endl;
 		}
 
 		template<typename SequenceType>
 		void operator()(SequenceType const& s) {
-			std::cout << _name << ": Got sequence data to report" << std::endl;
+			//std::cout << _name << ": Got sequence data to report" << std::endl;
 
 			copySequenceToArray(boost::fusion::transform(s, _f), _server->channels());
 			_server->report();
