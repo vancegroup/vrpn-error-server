@@ -32,7 +32,7 @@ add_subdirectory(vrpn)
 set(VRPN_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/vrpn" "${CMAKE_CURRENT_SOURCE_DIR}/vrpn" "${CMAKE_CURRENT_SOURCE_DIR}/vrpn/quat")
 set(VRPN_LIBRARIES vrpnserver)
 set(VRPN_FOUND TRUE)
-add_definitions(-DVRPN_USING_CMAKE)
+add_definitions(-DVRPN_USING_CMAKE="${CMAKE_CURRENT_BINARY_DIR}/vrpn/vrpn_Configure.h")
 
 find_package(Boost REQUIRED)
 
