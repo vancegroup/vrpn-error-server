@@ -64,11 +64,28 @@ void AppObject::parseAndBeginSetup(int argc, const char * const * argv) {
 	TCLAP::ValueArg<long> baudrate("b", "baud", "baud rate", false, 115200, "baud rate", _cmd);
 	TCLAP::ValueArg<int> portnumval("n", "netport", "network port for VRPN to listen on (defaults to standard VRPN port)", false, vrpn_DEFAULT_LISTEN_PORT_NO, "port", _cmd);
 	TCLAP::ValueArg<double> msginterval("i", "interval", "milliseconds of interval between messages", false, 0, "ms", _cmd);
+	TCLAP::ValueArg<std::string> inFilename("", "incominglog", "in log file", false, "", "filename", _cmd);
+	TCLAP::ValueArg<std::string> outFilename("", "outgoinglog", "out log file", false, "", "filename", _cmd);
 
 	_cmd.parse(argc, argv);
 
+	bool logIn = false;
+	bool logOut = false;
+
+	if (!inFilename.getValue().empty()) {
+		VERBOSE_MSG("Logging incoming to " << inFilename.getValue());
+		logIn = true;
+	}
+
+	if (!outFilename.getValue().empty()) {
+		VERBOSE_MSG("Logging outgoing to " << outFilename.getValue());
+		logOut = true;
+	}
+
 	VERBOSE_START("Creating server connection on port " << portnumval.getValue());
-	_c = vrpn_create_server_connection(portnumval.getValue());
+	_c = vrpn_create_server_connection(portnumval.getValue(),
+	                                   logIn ? inFilename.getValue().c_str() : NULL,
+	                                   logOut ? outFilename.getValue().c_str() : NULL);
 	_container.add(_c);
 	VERBOSE_DONE();
 
