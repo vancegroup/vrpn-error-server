@@ -44,6 +44,9 @@ target_link_libraries(server-common ${VRPN_LIBRARIES})
 add_executable(error_server main.cpp)
 target_link_libraries(error_server server-common)
 
-add_executable(two_way_adjustable_server two-way-adjustable.cpp)
-target_link_libraries(two_way_adjustable_server server-common)
-
+if(MSVC)
+	message(STATUS "Too much metaprogramming for Visual C++ to handle in two-way-adjustable, so skipping it!")
+else()
+	add_executable(two_way_adjustable_server two-way-adjustable.cpp)
+	target_link_libraries(two_way_adjustable_server server-common)
+endif()
