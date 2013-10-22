@@ -33,16 +33,20 @@ namespace Ui {
     class Configuration;
 }
 
+struct Settings;
+
 class Configuration : public QDialog {
     Q_OBJECT
   public:
-    explicit Configuration(QWidget *parent = 0);
+    explicit Configuration(QString const& fn, Settings & s, QWidget *parent = 0);
   private
 slots:
     void dialogAccepted();
 
   private:
     QSharedPointer<Ui::Configuration> ui_;
+    Settings & s_;
+    QString fn_;
 };
 
 #endif // INCLUDED_Configuration_h_GUID_ea2280fe_7682_4de6_bee8_ec471468dd10

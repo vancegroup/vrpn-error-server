@@ -35,17 +35,14 @@ struct Settings {
     qint16 vrpnPort;
 
     QString serialPort;
-    qint16 baud;
+    qint32 baud;
 
     qint16 messageInterval;
-    qint16 gain;
+    qint32 gain;
     bool receiveStatus;
 
     void save(QString const& fn) const;
     void load(QString const& fn);
-
-    void saveXML(QString const& fn) const;
-    void loadXML(QString const& fn);
 };
 
 class RobotSettings {

@@ -36,7 +36,15 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName("Vance Mobile Robot Server");
     RobotSettings::checkCommandLineArgs();
 
-    Configuration config;
+    Settings s;
+    QStringList args = QCoreApplication::arguments();
+    QString fn("config.dat");
+    if (args.size() > 1) {
+        fn = args.at(1);
+        s.load(fn);
+    }
+
+    Configuration config(fn, s);
     config.show();
     return app.exec();
 }

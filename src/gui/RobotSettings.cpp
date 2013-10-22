@@ -24,12 +24,12 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <QDebug>
-#include <QXmlStreamWriter>
+#include <QDataStream>
+#include <QFile>
 #include <vrpn_Configure.h>
 
 // Standard includes
 #include <iostream>
-#include <QDomDocument>
 
 Settings::Settings()
     : deviceBaseName("Robot")
@@ -55,33 +55,6 @@ QDataStream & operator >>(QDataStream & stream, Settings & s) {
     return stream;
 }
 
-void Settings::saveXML(QString const& fn) const {
-    QFile file(fn);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        std::cerr << "Error: Cannot write file "
-                  << qPrintable(fn) << ": "
-                  << qPrintable(file.errorString()) << std::endl;
-        return;
-    }
-    QXmlStreamWriter stream(file);
-
-    stream.setAutoFormatting(true);
-    stream.writeStartDocument();
-    stream.writeStartElement("robot_settings");
-
-
-    stream.writeTextElement("deviceBaseName", deviceBaseName);
-    stream.writeTextElement("vrpnPort", QString::number(vrpnPort));
-    stream.writeTextElement("serialPort", serialPort);
-    stream.writeTextElement("baud", QString::number(baud));
-    stream.writeTextElement("messageInterval", QString::number(messageInterval));
-    stream.writeTextElement("gain", gain);
-    stream.writeTextElement("receiveStatus", receiveStatus ? "true" : "false");
-
-    stream.writeEndElement();
-    stream.writeEndDocument();
-}
-
 void Settings::save(QString const& fn) const {
     QFile file(fn);
     if (!file.open(QFile::WriteOnly)) {
@@ -90,7 +63,7 @@ void Settings::save(QString const& fn) const {
                   << qPrintable(file.errorString()) << std::endl;
         return;
     }
-    QDataStream stream(file);
+    QDataStream stream(&file);
     stream << *this;
 }
 
@@ -106,30 +79,6 @@ void Settings::load(QString const& fn) {
     }
     QDataStream stream(&file);
     stream >> *this;
-}
-
-void Settings::loadXML(QString const& fn) {
-
-    QFile file(fn);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        std::cerr << "Error: Cannot read file "
-                  << qPrintable(fn) << ": "
-                  << qPrintable(file.errorString()) << std::endl;
-        return;
-    }
-    QXmlStreamReader stream(file);
-    while(!stream.atEnd() && !stream.hasError()) {
-        QXmlStreamReader::TokenType token = stream.readNext();
-        if (token == QXmlStreamReader::StartDocument) {
-            // Jump past the start document
-            continue;
-        }
-        if (token == QXmlStreamReader::StartElement) {
-            if (stream.name() == "deviceBaseName") {
-
-            }
-        }
-    }
 }
 
 RobotSettings::RobotSettings() {}

@@ -28,22 +28,23 @@
 // Standard includes
 // - none
 
-Configuration::Configuration(QWidget *parent)
+Configuration::Configuration(const QString & fn, Settings &s, QWidget *parent)
     : QDialog(parent)
-    , ui_(new Ui::Configuration) {
+    , ui_(new Ui::Configuration)
+    , s_(s)
+    , fn_(fn) {
     ui_->setupUi(this);
     Ui::Configuration *ui = ui_.data();
 
-    RobotSettings s;
-    ui->deviceBaseName->setText(s.deviceBaseName());
-    ui->vrpnPort->setValue(s.vrpnPort());
+    ui->deviceBaseName->setText(s.deviceBaseName);
+    ui->vrpnPort->setValue(s.vrpnPort);
 
-    ui->serialPort->setText(s.serialPort());
-    ui->baud->setCurrentIndex(ui->baud->findText(QString::number(s.baud())));
+    ui->serialPort->setText(s.serialPort);
+    ui->baud->setCurrentIndex(ui->baud->findText(QString::number(s.baud)));
 
-    ui->interval->setValue(s.messageInterval());
-    ui->gain->setValue(s.gain());
-    ui->receive->setChecked(s.receiveStatus());
+    ui->interval->setValue(s.messageInterval);
+    ui->gain->setValue(s.gain);
+    ui->receive->setChecked(s.receiveStatus);
 
     connect(this, SIGNAL(accepted()), this, SLOT(dialogAccepted()));
 }
@@ -51,15 +52,16 @@ Configuration::Configuration(QWidget *parent)
 void Configuration::dialogAccepted() {
 
     Ui::Configuration *ui = ui_.data();
+    Settings & s = s_;
+    s.deviceBaseName = ui->deviceBaseName->text();
+    s.vrpnPort = ui->vrpnPort->value();
 
-    RobotSettings s;
-    s.setDeviceBaseName(ui->deviceBaseName->text());
-    s.setVrpnPort(ui->vrpnPort->value());
+    s.serialPort = ui->serialPort->text();
+    s.baud = ui->baud->currentText().toInt();
 
-    s.setSerialPort(ui->serialPort->text());
-    s.setBaud(ui->baud->currentText().toInt());
+    s.messageInterval = ui->interval->value();
+    s.gain = ui->gain->value();
+    s.receiveStatus = ui->receive->isChecked();
 
-    s.setMessageInterval(ui->interval->value());
-    s.setGain(ui->gain->value());
-    s.setReceiveStatus(ui->receive->isChecked());
+    s.save(fn_);
 }
