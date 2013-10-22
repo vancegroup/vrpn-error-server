@@ -18,7 +18,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
-#include "Configuration.h"
+#include "RobotServerGui.h"
 #include "RobotSettings.h"
 
 // Library/third-party includes
@@ -26,7 +26,6 @@
 
 // Standard includes
 // - none
-
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -44,7 +43,7 @@ int main(int argc, char *argv[]) {
         s.setFilename("config.dat");
     }
 
-    Configuration config(s);
-    config.show();
+    RobotServerGui gui(s);
+    gui.show();
     return app.exec();
 }

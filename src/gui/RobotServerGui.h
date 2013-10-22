@@ -23,9 +23,41 @@
 // - none
 
 // Library/third-party includes
-// - none
+#include <QMainWindow>
+#include <QSharedPointer>
 
 // Standard includes
 // - none
+
+namespace Ui {
+    class MainWindow;
+}
+
+class RobotSettings;
+
+class RobotServerGui : public QMainWindow {
+    Q_OBJECT
+  public:
+    explicit RobotServerGui(RobotSettings &s, QWidget *parent = 0);
+
+    void handleUpdatedSettings();
+
+    void dirtySettings();
+    void cleanSettings();
+
+  public
+slots:
+
+    void on_action_Open_configuration_triggered();
+    void on_action_Configuration_triggered();
+    void on_action_Save_configuration_triggered();
+    void on_actionSave_configuration_as_triggered();
+    void on_action_Quit_triggered();
+    void on_action_About_triggered();
+
+  private:
+    QSharedPointer<Ui::MainWindow> ui_;
+    RobotSettings &s_;
+};
 
 #endif // INCLUDED_RobotServerGui_h_GUID_b91bed08_c403_4ced_a3ce_329653f0ea00
