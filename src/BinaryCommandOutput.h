@@ -68,7 +68,8 @@ class BinaryCommandOutput {
 			, _handler(&type::_changeHandler, this)
 			, _transform()
 			, _tx(port)
-			, _displayMessage(displaySendMessage) {
+			, _displayMessage(displaySendMessage)
+			, _gotMessage(false) {
 			_out_server.reset(new vrpn_Analog_Output_Callback_Server(deviceName, c, message_channels()));
 			vrpn_gettimeofday(&_nextMessage, NULL);
 			vrpn_Callbacks::register_change_handler(_out_server.get(), _handler);
@@ -111,6 +112,7 @@ class BinaryCommandOutput {
 		transmitter_type _tx;
 
 		bool _displayMessage;
+		bool _gotMessage;
 
 		struct timeval _lastMessage;
 		struct timeval _nextMessage;
@@ -118,6 +120,11 @@ class BinaryCommandOutput {
 
 template < typename MessageCollection, typename MessageType, typename TransformFunctor >
 inline void BinaryCommandOutput<MessageCollection, MessageType, TransformFunctor>::_changeHandler(const vrpn_ANALOGOUTPUTCB info) {
+
+	if (!_gotMessage) {
+		log() << "Got first command for robot!" << std::endl;
+		_gotMessage = true;
+	}
 
 	/// Find out if it's time to report again.
 	struct timeval now;
