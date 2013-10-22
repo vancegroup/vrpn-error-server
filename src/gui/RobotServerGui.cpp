@@ -34,17 +34,16 @@ int main(int argc, char *argv[]) {
         "Iowa State University Virtual Reality Applications Center");
     QCoreApplication::setOrganizationDomain("vrac.iastate.edu");
     QCoreApplication::setApplicationName("Vance Mobile Robot Server");
-    RobotSettings::checkCommandLineArgs();
 
-    Settings s;
+    RobotSettings s;
     QStringList args = QCoreApplication::arguments();
-    QString fn("config.dat");
     if (args.size() > 1) {
-        fn = args.at(1);
-        s.load(fn);
+        s.load(args.at(1));
+    } else {
+        s.setFilename("config.dat");
     }
 
-    Configuration config(fn, s);
+    Configuration config(s);
     config.show();
     return app.exec();
 }

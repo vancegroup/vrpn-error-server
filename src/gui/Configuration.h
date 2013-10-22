@@ -33,19 +33,19 @@ namespace Ui {
     class Configuration;
 }
 
-struct Settings;
+class RobotSettings;
 
 class Configuration : public QDialog {
     Q_OBJECT
   public:
-    explicit Configuration(QString const& fn, Settings & s, QWidget *parent = 0);
+    explicit Configuration(RobotSettings &s, QWidget *parent = 0);
   private
 slots:
     void dialogAccepted();
 
   private:
     QSharedPointer<Ui::Configuration> ui_;
-    Settings & s_;
+    RobotSettings &s_;
     QString fn_;
 };
 

@@ -31,35 +31,46 @@
 // Standard includes
 #include <iostream>
 
-Settings::Settings()
+RobotSettings::RobotSettings()
     : deviceBaseName("Robot")
     , vrpnPort(vrpn_DEFAULT_LISTEN_PORT_NO)
-    #ifdef _WIN32
+#ifdef _WIN32
     , serialPort("COM4")
-    #else
+#else
     , serialPort("/dev/ttyUSBS0")
-    #endif
+#endif
     , baud(115200)
     , messageInterval(0)
     , gain(25000)
-    , receiveStatus(true)
-{}
+    , receiveStatus(true) {
+}
 
-QDataStream & operator <<(QDataStream & stream, Settings const & s) {
-    stream << s.deviceBaseName << s.vrpnPort << s.serialPort << s.baud << s.messageInterval << s.gain << s.receiveStatus;
+// Use preprocessor here to be sure that fields are saved and loaded in the same
+// order.
+#define STREAMIT(OP)                                                           \
+    OP s.deviceBaseName OP s.vrpnPort OP s.serialPort OP s.baud OP             \
+    s.messageInterval OP s.gain OP s.receiveStatus
+
+QDataStream &operator<<(QDataStream &stream, RobotSettings const &s) {
+    stream STREAMIT(<< );
     return stream;
 }
 
-QDataStream & operator >>(QDataStream & stream, Settings & s) {
-    stream >> s.deviceBaseName >> s.vrpnPort >> s.serialPort >> s.baud >> s.messageInterval >> s.gain >> s.receiveStatus;
+QDataStream &operator>>(QDataStream &stream, RobotSettings &s) {
+    stream STREAMIT(>> );
     return stream;
 }
+#undef STREAMIT
 
-void Settings::save(QString const& fn) const {
-    QFile file(fn);
+void RobotSettings::save(const QString &fn) {
+    setFilename(fn);
+    save();
+}
+
+void RobotSettings::save() {
+    QFile file(fn_);
     if (!file.open(QFile::WriteOnly)) {
-        std::cerr << "Error: Cannot write file "
-                  << qPrintable(fn) << ": "
+        std::cerr << "Error: Cannot write file " << qPrintable(fn_) << ": "
                   << qPrintable(file.errorString()) << std::endl;
         return;
     }
@@ -67,13 +78,14 @@ void Settings::save(QString const& fn) const {
     stream << *this;
 }
 
-
-void Settings::load(QString const& fn) {
-
-    QFile file(fn);
+void RobotSettings::load(QString const &fn) {
+    setFilename(fn);
+    load();
+}
+void RobotSettings::load() {
+    QFile file(fn_);
     if (!file.open(QFile::ReadOnly)) {
-        std::cerr << "Error: Cannot read file "
-                  << qPrintable(fn) << ": "
+        std::cerr << "Error: Cannot read file " << qPrintable(fn_) << ": "
                   << qPrintable(file.errorString()) << std::endl;
         return;
     }
@@ -81,48 +93,7 @@ void Settings::load(QString const& fn) {
     stream >> *this;
 }
 
-RobotSettings::RobotSettings() {}
-RobotSettings::~RobotSettings() { settings_.sync(); }
-
-void RobotSettings::checkCommandLineArgs() {
-    QStringList args = QCoreApplication::arguments();
-    if (args.size() > 1) {
-        setFilename(args.at(1));
-    } else {
-        std::cout << "No settings file passed." << std::endl;
-    }
-}
-
 void RobotSettings::setFilename(QString const &fn) {
-    std::cout << "Selecting settings file: " << fn.toStdString() << std::endl;
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, fn);
-    QSettings settings;
-    settings.sync();
+    std::cout << "Selecting settings file: " << qPrintable(fn) << std::endl;
+    fn_ = fn;
 }
-
-#define SETTINGS(GETTER, SETTER, TYPE, ARGTYPESUFFIX, DEFAULT)                 \
-    static const char GETTER##_key[] = #GETTER;                                \
-    TYPE RobotSettings::GETTER() const {                                       \
-        return qvariant_cast<TYPE>(settings_.value(GETTER##_key, DEFAULT));    \
-    }                                                                          \
-    void RobotSettings::SETTER(TYPE ARGTYPESUFFIX val) {                       \
-        settings_.setValue(GETTER##_key, val);                                 \
-    }
-
-SETTINGS(deviceBaseName, setDeviceBaseName, QString, const &, "Robot")
-SETTINGS(vrpnPort, setVrpnPort, int, , vrpn_DEFAULT_LISTEN_PORT_NO)
-
-#ifdef _WIN32
-SETTINGS(serialPort, setSerialPort, QString, const &, "COM4")
-#else
-SETTINGS(serialPort, setSerialPort, QString, const &, "/dev/ttyUSBS0")
-#endif
-
-SETTINGS(baud, setBaud, int, , 115200)
-
-SETTINGS(messageInterval, setMessageInterval, int, , 0)
-SETTINGS(gain, setGain, int, , 25000)
-SETTINGS(receiveStatus, setReceiveStatus, bool, , true)
-
-

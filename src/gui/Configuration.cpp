@@ -28,11 +28,10 @@
 // Standard includes
 // - none
 
-Configuration::Configuration(const QString & fn, Settings &s, QWidget *parent)
+Configuration::Configuration(RobotSettings &s, QWidget *parent)
     : QDialog(parent)
     , ui_(new Ui::Configuration)
-    , s_(s)
-    , fn_(fn) {
+    , s_(s) {
     ui_->setupUi(this);
     Ui::Configuration *ui = ui_.data();
 
@@ -52,7 +51,7 @@ Configuration::Configuration(const QString & fn, Settings &s, QWidget *parent)
 void Configuration::dialogAccepted() {
 
     Ui::Configuration *ui = ui_.data();
-    Settings & s = s_;
+    RobotSettings &s = s_;
     s.deviceBaseName = ui->deviceBaseName->text();
     s.vrpnPort = ui->vrpnPort->value();
 
@@ -63,5 +62,5 @@ void Configuration::dialogAccepted() {
     s.gain = ui->gain->value();
     s.receiveStatus = ui->receive->isChecked();
 
-    s.save(fn_);
+    s.save();
 }
