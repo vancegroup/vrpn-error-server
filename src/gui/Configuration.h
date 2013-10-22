@@ -1,6 +1,5 @@
-/**
-        @file
-        @brief Implementation
+/** @file
+        @brief Header
 
         @date 2013
 
@@ -17,26 +16,33 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef INCLUDED_Configuration_h_GUID_ea2280fe_7682_4de6_bee8_ec471468dd10
+#define INCLUDED_Configuration_h_GUID_ea2280fe_7682_4de6_bee8_ec471468dd10
+
 // Internal Includes
-#include "Configuration.h"
-#include "RobotSettings.h"
+// - none
 
 // Library/third-party includes
-#include <QApplication>
+#include <QDialog>
+#include <QSharedPointer>
 
 // Standard includes
 // - none
 
-int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
-
-    QCoreApplication::setOrganizationName(
-        "Iowa State University Virtual Reality Applications Center");
-    QCoreApplication::setOrganizationDomain("vrac.iastate.edu");
-    QCoreApplication::setApplicationName("Vance Mobile Robot Server");
-    RobotSettings::checkCommandLineArgs();
-
-    Configuration config;
-    config.show();
-    return app.exec();
+namespace Ui {
+    class Configuration;
 }
+
+class Configuration : public QDialog {
+    Q_OBJECT
+  public:
+    explicit Configuration(QWidget *parent = 0);
+  private
+slots:
+    void dialogAccepted();
+
+  private:
+    QSharedPointer<Ui::Configuration> ui_;
+};
+
+#endif // INCLUDED_Configuration_h_GUID_ea2280fe_7682_4de6_bee8_ec471468dd10

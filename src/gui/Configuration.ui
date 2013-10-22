@@ -23,7 +23,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Device base ame</string>
+         <string>Device base name</string>
         </property>
         <property name="buddy">
          <cstring>deviceBaseName</cstring>
@@ -33,13 +33,20 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="deviceBaseName"/>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Listening port</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="vrpnPort">
+        <property name="minimum">
+         <number>1024</number>
+        </property>
+        <property name="maximum">
+         <number>65535</number>
         </property>
        </widget>
       </item>
@@ -72,6 +79,9 @@
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Baud</string>
+        </property>
+        <property name="buddy">
+         <cstring>baud</cstring>
         </property>
        </widget>
       </item>
@@ -126,6 +136,9 @@
         <property name="text">
          <string>Gain</string>
         </property>
+        <property name="buddy">
+         <cstring>gain</cstring>
+        </property>
        </widget>
       </item>
       <item row="5" column="0" colspan="2">
@@ -146,7 +159,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QSpinBox" name="spinBox">
+       <widget class="QSpinBox" name="interval">
         <property name="suffix">
          <string> ms</string>
         </property>
@@ -159,6 +172,9 @@
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Message interval</string>
+        </property>
+        <property name="buddy">
+         <cstring>interval</cstring>
         </property>
        </widget>
       </item>
