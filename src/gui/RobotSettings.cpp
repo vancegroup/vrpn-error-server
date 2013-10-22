@@ -21,9 +21,6 @@
 #include "RobotSettings.h"
 
 // Library/third-party includes
-#include <QCoreApplication>
-#include <QStringList>
-#include <QDebug>
 #include <QDataStream>
 #include <QFile>
 #include <vrpn_Configure.h>
