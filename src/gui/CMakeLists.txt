@@ -6,16 +6,17 @@ include(${QT_USE_FILE})
 
 
 set(SOURCES
+    robot_server_main.cpp
     Configuration.cpp
     RobotServerGui.cpp
-    RobotServerGui.h
     RobotSettings.cpp
     RobotSettings.h)
 
 qt4_wrap_ui(GENERATED Configuration.ui mainwindow.ui)
 
 set(MOC
-    Configuration.h)
+    Configuration.h
+    RobotServerGui.h)
 qt4_wrap_cpp(GENERATED ${MOC})
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/.." "${CMAKE_CURRENT_BINARY_DIR}")
