@@ -56,4 +56,6 @@ else()
 		RUNTIME DESTINATION bin)
 endif()
 
-add_subdirectory(gui)
+if(BUILD_QT_GUI)
+    add_subdirectory(gui)
+endif()

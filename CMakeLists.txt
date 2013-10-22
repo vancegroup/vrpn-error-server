@@ -11,7 +11,7 @@ project(vrpn-error-server)
 # Options
 ###
 
-
+option(BUILD_QT_GUI "Build the Qt-based Robot Server GUI" OFF)
 
 ###
 # Perform build configuration of dependencies
