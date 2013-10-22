@@ -18,10 +18,33 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Internal Includes
-// - none
+#include "Configuration.h"
+#include "RobotSettings.h"
 
 // Library/third-party includes
-// - none
+#include <QApplication>
 
 // Standard includes
 // - none
+
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    QCoreApplication::setOrganizationName(
+        "Iowa State University Virtual Reality Applications Center");
+    QCoreApplication::setOrganizationDomain("vrac.iastate.edu");
+    QCoreApplication::setApplicationName("Vance Mobile Robot Server");
+
+    RobotSettings s;
+    QStringList args = QCoreApplication::arguments();
+    if (args.size() > 1) {
+        s.load(args.at(1));
+    } else {
+        s.setFilename("config.dat");
+    }
+
+    Configuration config(s);
+    config.show();
+    return app.exec();
+}
