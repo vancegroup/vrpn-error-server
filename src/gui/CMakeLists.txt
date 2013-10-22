@@ -12,7 +12,7 @@ set(SOURCES
     RobotSettings.cpp
     RobotSettings.h)
 
-qt4_wrap_ui(GENERATED Configuration.ui)
+qt4_wrap_ui(GENERATED Configuration.ui mainwindow.ui)
 
 set(MOC
     Configuration.h)

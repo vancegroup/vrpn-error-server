@@ -67,7 +67,7 @@ void RobotSettings::save(const QString &fn) {
     save();
 }
 
-void RobotSettings::save() {
+void RobotSettings::save() const {
     QFile file(fn_);
     if (!file.open(QFile::WriteOnly)) {
         std::cerr << "Error: Cannot write file " << qPrintable(fn_) << ": "
@@ -78,19 +78,20 @@ void RobotSettings::save() {
     stream << *this;
 }
 
-void RobotSettings::load(QString const &fn) {
+bool RobotSettings::load(QString const &fn) {
     setFilename(fn);
-    load();
+    return load();
 }
-void RobotSettings::load() {
+bool RobotSettings::load() {
     QFile file(fn_);
     if (!file.open(QFile::ReadOnly)) {
         std::cerr << "Error: Cannot read file " << qPrintable(fn_) << ": "
                   << qPrintable(file.errorString()) << std::endl;
-        return;
+        return false;
     }
     QDataStream stream(&file);
     stream >> *this;
+    return true;
 }
 
 void RobotSettings::setFilename(QString const &fn) {
